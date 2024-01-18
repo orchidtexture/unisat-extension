@@ -1,9 +1,9 @@
-# UniSat Wallet
+# Kondor Wallet
 
-UniSat Wallet - the first open-source browser extension wallet for Ordinals on bitcoin.
+Kondor Wallet - Based on Unisat Wallet, the first open-source browser extension wallet for Ordinals on bitcoin.
 
-- Website: https://unisat.io/
-- Twitter: https://twitter.com/unisat_wallet
+- Website: https://kondor.finance/
+- Twitter: https://twitter.com/KondorFinance
 
 ## How to build
 
@@ -16,4 +16,4 @@ UniSat Wallet - the first open-source browser extension wallet for Ordinals on b
 
 ## Special Thanks
 
-Thanks to the MetaMask team for their contributions to the browser extension wallet community, UniSat Wallet relies heavily on their contributions.
+Thanks to the Unisat team for their contributions to the Bitcoin wallet community and thanks to the MetaMask team for their contributions to the browser extension wallet community, Kondor Wallet relies heavily on their contributions.
