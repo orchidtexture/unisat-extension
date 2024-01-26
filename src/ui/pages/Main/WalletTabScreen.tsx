@@ -214,6 +214,10 @@ export default function WalletTabScreen() {
             )}
           </Row>
 
+          <div>
+            <BisonBitcoinBalance />
+          </div>
+
           <Tabs
             size={'small'}
             defaultActiveKey={assetTabKey as unknown as string}
@@ -301,7 +305,7 @@ function AtomicalsTab() {
     },
     {
       key: AtomicalsAssetTabKey.OTHERS,
-      label: `Others`,
+      label: 'Others',
       children: (
         <Column style={{ minHeight: 150 }} itemsCenter justifyCenter>
           <Empty text="Not supported yet" />
@@ -481,6 +485,55 @@ function BRC20List() {
         />
       </Row>
     </Column>
+  );
+}
+
+function BisonBitcoinBalance() {
+  // const navigate = useNavigate();
+  const currentAccount = useCurrentAccount();
+
+  const [total, setTotal] = useState('1000');
+
+  const tools = useTools();
+  const fetchData = async () => {
+    const btcEndpointUrl = 'https://testnet.bisonlabs.io/btc_endpoint/balance';
+    const data = { address: currentAccount.address };
+    try {
+      const response = await fetch(btcEndpointUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+      const res = await response.json();
+      setTotal(res.balance);
+      console.log('fetched btc balance from bison testnet');
+    } catch (e) {
+      tools.toastError((e as Error).message);
+    }
+  };
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  // emulates interface for brc-20 data structure just to reuse brc-20 balance card component
+  const data = {
+    availableBalance: total.toString(),
+    overallBalance: total.toString(),
+    ticker: 'bBTC',
+    transferableBalance: total.toString(),
+    availableBalanceSafe: total.toString(),
+    availableBalanceUnSafe: total.toString()
+  };
+
+  return (
+    <BRC20BalanceCard
+      tokenBalance={data}
+      // onClick={() => {
+      //   navigate('BRC20TokenScreen', { tokenBalance: data, ticker: data.ticker });
+      // }}
+    />
   );
 }
 
