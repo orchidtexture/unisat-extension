@@ -1,5 +1,3 @@
-import randomstring from 'randomstring';
-
 import { createPersistStore } from '@/background/utils';
 import { CHANNEL, OPENAPI_URL_MAINNET, OPENAPI_URL_TESTNET, VERSION } from '@/shared/constant';
 import {
@@ -8,21 +6,22 @@ import {
   AppSummary,
   Arc20Balance,
   BitcoinBalance,
-  DecodedPsbt,
-  FeeSummary,
-  InscribeOrder,
+  DecodedPsbt, FeeSummary, InscribeOrder,
   Inscription,
   InscriptionSummary,
   NetworkType,
   TokenBalance,
   TokenTransfer,
+  TxnParams,
   UTXO,
   UTXO_Detail,
   VersionDetail,
   WalletConfig
 } from '@/shared/types';
-
+import randomstring from 'randomstring';
 import { preferenceService } from '.';
+
+
 
 interface OpenApiStore {
   host: string;
@@ -32,9 +31,29 @@ interface OpenApiStore {
 
 const maxRPS = 100;
 
+const BISON_HOST = 'https://testnet.bisonlabs.io';
+
 enum API_STATUS {
   FAILED = -1,
   SUCCESS = 0
+}
+
+const buldTxn = (txnInput: TxnParams) => {
+  const txn: any = {
+    method: "transfer",
+    sAddr: txnInput.sender,
+    rAddr: txnInput.receiver,
+    amt: txnInput.amt,
+    tick: txnInput.tick,
+    nonce: txnInput.nonce,
+    tokenContractAddress: txnInput.tokenContractAddress,
+    sig: txnInput.sig || ""
+  };
+  if (txnInput.gas_estimated && txnInput.gas_estimated_hash) {
+    txn.gas_estimated_hash = txnInput.gas_estimated_hash
+    txn.gas_estimated = txnInput.gas_estimated
+  };
+  return txn;
 }
 
 export class OpenApiService {
@@ -164,6 +183,63 @@ export class OpenApiService {
     return this.getRespData(res);
   };
 
+  b_getRespData = async (res: any) => {
+    let jsonRes
+
+    if (!res) throw new Error('Network error, no response');
+    if (res.status !== 200) throw new Error('Network error with status: ' + res.status);
+    try {
+      jsonRes = await res.json();
+    } catch (e) {
+      throw new Error('Network error, json parse error');
+    }
+    if (!jsonRes) throw new Error('Network error,no response data');
+    return jsonRes;
+  };
+
+  b_httpGet = async (route: string, params: any) => {
+    let url = BISON_HOST + route;
+    let c = 0;
+    for (const id in params) {
+      if (c == 0) {
+        url += '?';
+      } else {
+        url += '&';
+      }
+      url += `${id}=${params[id]}`;
+      c++;
+    }
+    const headers = new Headers();
+    let res: Response;
+    try {
+      res = await fetch(new Request(url), { method: 'GET', headers, mode: 'cors', cache: 'default' });
+    } catch (e: any) {
+      throw new Error('Network error: ' + e && e.message);
+    }
+
+    return this.b_getRespData(res);
+  };
+
+  b_httpPost = async (route: string, params: any) => {
+    const url = BISON_HOST + route;
+    const headers = new Headers();
+    headers.append('Content-Type', 'application/json;charset=utf-8');
+    let res: Response;
+    try {
+      res = await fetch(new Request(url), {
+        method: 'POST',
+        headers,
+        mode: 'cors',
+        cache: 'default',
+        body: JSON.stringify(params)
+      });
+    } catch (e: any) {
+      throw new Error('Network error: ' + e && e.message);
+    }
+
+    return this.b_getRespData(res);
+  };
+
   async getWalletConfig(): Promise<WalletConfig> {
     return this.httpGet('/default/config', {});
   }
@@ -246,6 +322,59 @@ export class OpenApiService {
 
   async getFeeSummary(): Promise<FeeSummary> {
     return this.httpGet('/default/fee-summary', {});
+  }
+
+  async getNonce(address): Promise<number> {
+    let resp: any = this.b_httpGet(`/sequencer_endpoint/nonce/${address}`, {});
+    return resp.nonce || 0
+  }
+
+  async b_getFeeSummary(sender: string, receiver: string, amt: number, tick: string, tokenContractAddress: string): Promise<any> {
+    const nonce = this.getNonce(sender)
+    const txn = buldTxn({sender, receiver, amt, tick, tokenContractAddress, nonce});
+    const fee: any = this.b_httpPost('/sequencer_endpoint/gas_meter', txn);
+    return {
+      gas_estimated: fee.gas_estimated,
+      gas_estimated_hash: fee.gas_estimated_hash,
+      list: [
+          {
+              "title": "Slow",
+              "desc": "About 1 hours",
+              "feeRate": fee.gas_estimated
+          },
+          {
+              "title": "Avg",
+              "desc": "About 30 minutes",
+              "feeRate": fee.gas_estimated
+          },
+          {
+              "title": "Fast",
+              "desc": "About 10 minutes",
+              "feeRate": fee.gas_estimated
+          }
+      ]
+    };
+  }
+
+  async b_enqueueTxn(sender: string, receiver: string, amt: number, tick: string, tokenContractAddress: string, nonce: number, gas_estimated: number, gas_estimated_hash: string): Promise<any> {
+    const unsignedTxn = buldTxn({sender, receiver, amt, tick, tokenContractAddress, nonce});
+    const sig = this.bip322sig(unsignedTxn) // TODO: add the real bip 322 sig
+    const signedTxn = buldTxn({...unsignedTxn, sig, gas_estimated, gas_estimated_hash});
+    const tx: any = this.b_httpPost('/sequencer_endpoint/enqueue_transaction', signedTxn);
+    return tx;
+  }
+
+  async b_transfer(sender: string, receiver: string, amt: number, tick: string, tokenContractAddress: string, nonce: number, gas_estimated: number, gas_estimated_hash: string): Promise<any> {
+    const unsignedTxn = buldTxn({sender, receiver, amt, tick, tokenContractAddress, nonce});
+    const sig = this.bip322sig(unsignedTxn) // TODO: add the real bip 322 sig
+    const signedTxn = buldTxn({...unsignedTxn, sig, gas_estimated, gas_estimated_hash});
+    const tx: any = this.b_httpPost('/sequencer_endpoint/transfer', signedTxn);
+    return tx;
+  }
+
+  // TODO: find the real sig method
+  async bip322sig(txn: TxnParams): Promise<any> {
+    return ""
   }
 
   async getDomainInfo(domain: string): Promise<Inscription> {

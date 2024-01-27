@@ -335,3 +335,17 @@ export interface VersionDetail {
   title: string;
   changelogs: string[];
 }
+
+export interface TxnParams {
+    method?: string;
+    sender: string;
+    receiver: string;
+    amt: number;
+    tick: string;
+    nonce?: number;
+    tokenContractAddress: string;
+    sig?: string;
+    gas_estimated?: string;
+    gas_estimated_hash?: string;
+}
+

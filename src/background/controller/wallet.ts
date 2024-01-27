@@ -10,9 +10,7 @@ import {
 import i18n from '@/background/service/i18n';
 import { DisplayedKeyring, Keyring } from '@/background/service/keyring';
 import {
-  ADDRESS_TYPES,
-  AddressFlagType,
-  BRAND_ALIAN_TYPE_TEXT,
+  AddressFlagType, ADDRESS_TYPES, BRAND_ALIAN_TYPE_TEXT,
   CHAINS_ENUM,
   COIN_NAME,
   COIN_SYMBOL,
@@ -35,17 +33,17 @@ import {
   WalletKeyring
 } from '@/shared/types';
 import { checkAddressFlag } from '@/shared/utils';
-import { UnspentOutput, txHelpers } from '@unisat/wallet-sdk';
+import { txHelpers, UnspentOutput } from '@unisat/wallet-sdk';
 import { publicKeyToAddress, scriptPkToAddress } from '@unisat/wallet-sdk/lib/address';
-import { ECPair, bitcoin } from '@unisat/wallet-sdk/lib/bitcoin-core';
+import { bitcoin, ECPair } from '@unisat/wallet-sdk/lib/bitcoin-core';
 import { signMessageOfBIP322Simple } from '@unisat/wallet-sdk/lib/message';
 import { toPsbtNetwork } from '@unisat/wallet-sdk/lib/network';
 import { toXOnly } from '@unisat/wallet-sdk/lib/utils';
-
 import { ContactBookItem } from '../service/contactBook';
 import { OpenApiService } from '../service/openapi';
 import { ConnectedSite } from '../service/permission';
 import BaseController from './base';
+
 
 const stashKeyrings: Record<string, Keyring> = {};
 export type AccountAsset = {
@@ -483,6 +481,9 @@ export class WalletController extends BaseController {
       }
     });
     psbt = await keyringService.signTransaction(_keyring, psbt, toSignInputs);
+    console.log('psbt')
+    console.log(psbt)
+    console.log(_keyring, psbt, toSignInputs)
     if (autoFinalized) {
       toSignInputs.forEach((v) => {
         // psbt.validateSignaturesOfInput(v.index, validator);
@@ -493,21 +494,29 @@ export class WalletController extends BaseController {
   };
 
   signMessage = async (text: string) => {
+    console.log("sign")
+    console.log(text)
     const account = preferenceService.getCurrentAccount();
     if (!account) throw new Error('no current account');
-    return keyringService.signMessage(account.pubkey, text);
+    const sig = keyringService.signMessage(account.pubkey, text);
+    console.log(sig)
+    return sig
   };
 
   signBIP322Simple = async (text: string) => {
+    console.log("sign322")
+    console.log(text)
     const account = preferenceService.getCurrentAccount();
     if (!account) throw new Error('no current account');
     const networkType = this.getNetworkType();
-    return signMessageOfBIP322Simple({
+    const sig = signMessageOfBIP322Simple({
       message: text,
       address: account.address,
       networkType,
       wallet: this as any
     });
+    console.log(sig)
+    return sig
   };
 
   requestKeyring = (type: string, methodName: string, keyringId: number | null, ...params) => {
@@ -706,6 +715,7 @@ export class WalletController extends BaseController {
     enableRBF: boolean;
     btcUtxos?: UnspentOutput[];
   }) => {
+    console.log('sendBTC')
     const account = preferenceService.getCurrentAccount();
     if (!account) throw new Error('no current account');
 
@@ -714,6 +724,9 @@ export class WalletController extends BaseController {
     if (!btcUtxos) {
       btcUtxos = await this.getBTCUtxos();
     }
+
+    console.log('utxos')
+    console.log(btcUtxos)
 
     if (btcUtxos.length == 0) {
       throw new Error('Insufficient balance.');
@@ -727,6 +740,9 @@ export class WalletController extends BaseController {
       feeRate,
       enableRBF
     });
+
+    console.log("psbt, toSignInputs")
+    console.log(psbt, toSignInputs)
 
     this.setPsbtSignNonSegwitEnable(psbt, true);
     await this.signPsbt(psbt, toSignInputs, true);
@@ -1219,8 +1235,12 @@ export class WalletController extends BaseController {
     return account;
   };
 
-  getFeeSummary = async () => {
-    return openapiService.getFeeSummary();
+  // getFeeSummary = async () => {
+  //   return openapiService.getFeeSummary();
+  // };
+
+  b_getFeeSummary = async (address: string, receiver: string, tick: string, amount: string, tokenAddress: string) => {
+    return openapiService.b_getFeeSummary(address, receiver, amount, tick, tokenAddress);
   };
 
   inscribeBRC20Transfer = (address: string, tick: string, amount: string, feeRate: number) => {
