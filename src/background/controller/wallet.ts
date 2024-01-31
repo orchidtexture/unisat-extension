@@ -1273,7 +1273,7 @@ export class WalletController extends BaseController {
     const balancePromises = contracts.map(contract => {
       const balanceEndpoint = `${contract.contractEndpoint}/balance`;
       return axios.post<BalanceBisonResponse>(balanceEndpoint, {
-        address: ''
+        address
       })
         .then(balanceResponse => ({
           ticker: contract.tick,

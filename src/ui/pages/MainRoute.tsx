@@ -48,7 +48,9 @@ import TestScreen from './Test/TestScreen';
 import HistoryScreen from './Wallet/HistoryScreen';
 import MoonPayScreen from './Wallet/MoonPayScreen';
 import ReceiveScreen from './Wallet/ReceiveScreen';
+import TxBisonConfirmScreen from './Wallet/TxBisonConfirmScreen';
 import TxBisonCreateScreen from './Wallet/TxBisonCreateScreen';
+import TxBisonSuccessScreen from './Wallet/TxBisonSuccessScreen';
 import TxConfirmScreen from './Wallet/TxConfirmScreen';
 import TxCreateScreen from './Wallet/TxCreateScreen';
 import TxFailScreen from './Wallet/TxFailScreen';
@@ -117,9 +119,17 @@ const routes = {
     path: '/wallet/tx/confirm',
     element: <TxConfirmScreen />
   },
+  TxBisonConfirmScreen: {
+    path: '/wallet/tx/confirm/bison',
+    element: <TxBisonConfirmScreen />
+  },
   TxSuccessScreen: {
     path: '/wallet/tx/success',
     element: <TxSuccessScreen />
+  },
+  TxBisonSuccessScreen: {
+    path: '/wallet/tx/success/bison',
+    element: <TxBisonSuccessScreen />
   },
   TxFailScreen: {
     path: '/wallet/tx/fail',
