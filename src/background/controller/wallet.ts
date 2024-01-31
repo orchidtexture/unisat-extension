@@ -24,6 +24,7 @@ import {
   Account,
   AddressType,
   AddressUserToSignInput,
+  BisonTxnResponse,
   BitcoinBalance,
   NetworkType,
   PublicKeyUserToSignInput,
@@ -508,6 +509,7 @@ export class WalletController extends BaseController {
     console.log(text)
     const account = preferenceService.getCurrentAccount();
     if (!account) throw new Error('no current account');
+    console.log(account.address,)
     const networkType = this.getNetworkType();
     const sig = signMessageOfBIP322Simple({
       message: text,
@@ -954,6 +956,13 @@ export class WalletController extends BaseController {
   pushTx = async (rawtx: string) => {
     const txid = await this.openapi.pushTx(rawtx);
     return txid;
+  };
+
+  enqueueTx = async (rawtx: BisonTxnResponse) => {
+    const sig = await this.signBIP322Simple(JSON.stringify(rawtx))
+    const signedTxn = {...rawtx, sig};
+    const txnResp = await this.openapi.b_enqueueTxn(signedTxn);
+    return txnResp;
   };
 
   getAccounts = async () => {
