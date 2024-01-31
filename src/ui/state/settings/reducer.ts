@@ -14,7 +14,7 @@ export interface SettingsState {
 export const initialState: SettingsState = {
   locale: 'English',
   addressType: AddressType.P2TR,
-  networkType: NetworkType.TESTNET,
+  networkType: NetworkType.MAINNET,
   walletConfig: {
     version: '',
     moonPayEnabled: false, // TODO: configure at .env

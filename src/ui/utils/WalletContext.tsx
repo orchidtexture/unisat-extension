@@ -11,6 +11,7 @@ import {
   AddressTokenSummary,
   AppSummary,
   Arc20Balance,
+  BisonBalance,
   BitcoinBalance,
   DecodedPsbt,
   FeeSummary,
@@ -212,6 +213,12 @@ export interface WalletController {
     pageSize: number
   ): Promise<{ currentPage: number; pageSize: number; total: number; list: TokenBalance[] }>;
 
+  getBisonList(
+    address: string,
+    currentPage: number,
+    pageSize: number
+  ): Promise<{ currentPage: number; pageSize: number; total: number; list: BisonBalance[] }>;
+
   getBRC20TransferableList(
     address: string,
     ticker: string,
@@ -305,3 +312,4 @@ const useWallet = () => {
 };
 
 export { useWallet, WalletProvider };
+

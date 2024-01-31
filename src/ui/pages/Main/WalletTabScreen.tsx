@@ -1,9 +1,8 @@
 import { Tabs, Tooltip } from 'antd';
 import { CSSProperties, useEffect, useMemo, useState } from 'react';
 
-import { AddressFlagType, KEYRING_TYPE } from '@/shared/constant';
-import { Arc20Balance, Inscription, NetworkType, TokenBalance } from '@/shared/types';
-import { checkAddressFlag } from '@/shared/utils';
+import { KEYRING_TYPE } from '@/shared/constant';
+import { Arc20Balance, BisonBalance, Inscription, NetworkType, TokenBalance } from '@/shared/types';
 import { Card, Column, Content, Footer, Header, Icon, Layout, Row, Text } from '@/ui/components';
 import AccountSelect from '@/ui/components/AccountSelect';
 import { useTools } from '@/ui/components/ActionComponent';
@@ -11,6 +10,7 @@ import { AddressBar } from '@/ui/components/AddressBar';
 import Arc20BalanceCard from '@/ui/components/Arc20BalanceCard';
 import AtomicalsFeatureButton from '@/ui/components/AtomicalsFeatureButton';
 import BRC20BalanceCard from '@/ui/components/BRC20BalanceCard';
+import BisonBalanceCard from '@/ui/components/BisonBalanceCard';
 import { Button } from '@/ui/components/Button';
 import { Empty } from '@/ui/components/Empty';
 import InscriptionPreview from '@/ui/components/InscriptionPreview';
@@ -30,8 +30,8 @@ import {
   useVersionInfo,
   useWalletConfig
 } from '@/ui/state/settings/hooks';
-import { useAssetTabKey, useAtomicalsAssetTabKey, useOrdinalsAssetTabKey } from '@/ui/state/ui/hooks';
-import { AssetTabKey, AtomicalsAssetTabKey, OrdinalsAssetTabKey, uiActions } from '@/ui/state/ui/reducer';
+import { useAssetTabKey, useAtomicalsAssetTabKey } from '@/ui/state/ui/hooks';
+import { AssetTabKey, AtomicalsAssetTabKey, uiActions } from '@/ui/state/ui/reducer';
 import { fontSizes } from '@/ui/theme/font';
 import { useWallet } from '@/ui/utils';
 import { LoadingOutlined } from '@ant-design/icons';
@@ -48,6 +48,7 @@ export default function WalletTabScreen() {
 
   const accountBalance = useAccountBalance();
   const networkType = useNetworkType();
+  console.log(networkType)
   const isTestNetwork = networkType === NetworkType.TESTNET;
 
   const currentKeyring = useCurrentKeyring();
@@ -90,18 +91,14 @@ export default function WalletTabScreen() {
 
   const tabItems = [
     {
-      key: AssetTabKey.ORDINALS,
-      label: 'Ordinals',
-      children: <OrdinalsTab />
+      key: AssetTabKey.BISON,
+      label: 'Bison',
+      children: <BisonTab />
     },
     {
-      key: AssetTabKey.ATOMICALS,
-      label: 'Atomicals',
-      children: checkAddressFlag(currentAccount.flag, AddressFlagType.Is_Enable_Atomicals) ? (
-        <AtomicalsTab />
-      ) : (
-        <AtomicalsFeatureButton />
-      )
+      key: AssetTabKey.BITCOIN,
+      label: 'Bitcoin L1',
+      children: <BRC20List />
     }
   ];
 
@@ -197,7 +194,7 @@ export default function WalletTabScreen() {
               preset="default"
               icon="send"
               onClick={(e) => {
-                navigate('TxCreateScreen');
+                navigate('TxBisonCreateScreen');
               }}
               full
             />
@@ -214,9 +211,9 @@ export default function WalletTabScreen() {
             )}
           </Row>
 
-          <div>
+          {/* <div>
             <BisonBitcoinBalance />
-          </div>
+          </div> */}
 
           <Tabs
             size={'small'}
@@ -253,38 +250,27 @@ export default function WalletTabScreen() {
   );
 }
 
-function OrdinalsTab() {
-  const addressSummary = useAddressSummary();
-  const tabItems = [
-    {
-      key: OrdinalsAssetTabKey.ALL,
-      label: `ALL (${addressSummary.inscriptionCount})`,
-      children: <InscriptionList />
-    },
-    {
-      key: OrdinalsAssetTabKey.BRC20,
-      label: `BRC-20 (${addressSummary.brc20Count})`,
-      children: <BRC20List />
-    }
-  ];
+// function OrdinalsTab() {
+//   const addressSummary = useAddressSummary();
+//   const tabItems = [
+//     {
+//       key: OrdinalsAssetTabKey.ALL,
+//       label: `ALL (${addressSummary.inscriptionCount})`,
+//       children: <InscriptionList />
+//     },
+//     {
+//       key: OrdinalsAssetTabKey.BRC20,
+//       label: `BRC-20 (${addressSummary.brc20Count})`,
+//       children: <BRC20List />
+//     }
+//   ];
 
-  const tabKey = useOrdinalsAssetTabKey();
-  const dispatch = useAppDispatch();
+function BisonTab() {
+  const addressSummary = useAddressSummary();
+  console.log(addressSummary)
   return (
     <Column>
-      <Row justifyBetween>
-        <TabBar
-          defaultActiveKey={tabKey}
-          activeKey={tabKey}
-          items={tabItems}
-          preset="style2"
-          onTabClick={(key) => {
-            dispatch(uiActions.updateAssetTabScreen({ ordinalsAssetTabKey: key }));
-          }}
-        />
-      </Row>
-
-      {tabItems[tabKey].children}
+      {BisonList()}
     </Column>
   );
 }
@@ -488,7 +474,82 @@ function BRC20List() {
   );
 }
 
-function BisonBitcoinBalance() {
+function BisonList() {
+  const navigate = useNavigate();
+  const wallet = useWallet();
+  const currentAccount = useCurrentAccount();
+
+  const [tokens, setTokens] = useState<BisonBalance[]>([]);
+  const [total, setTotal] = useState(-1);
+  const [pagination, setPagination] = useState({ currentPage: 1, pageSize: 100 });
+
+  const tools = useTools();
+  const fetchData = async () => {
+    try {
+      // tools.showLoading(true);
+      const { list, total } = await wallet.getBisonList(
+        currentAccount.address,
+        pagination.currentPage,
+        pagination.pageSize
+      );
+      setTokens(list);
+      setTotal(total);
+      console.log(list);
+    } catch (e) {
+      tools.toastError((e as Error).message);
+    } finally {
+      // tools.showLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [pagination]);
+
+  if (total === -1) {
+    return (
+      <Column style={{ minHeight: 150 }} itemsCenter justifyCenter>
+        <LoadingOutlined />
+      </Column>
+    );
+  }
+
+  if (total === 0) {
+    return (
+      <Column style={{ minHeight: 150 }} itemsCenter justifyCenter>
+        <Empty text="Empty" />
+      </Column>
+    );
+  }
+
+  return (
+    <Column>
+      <Row style={{ flexWrap: 'wrap' }} gap="sm">
+        {tokens.map((data, index) => (
+          <BisonBalanceCard
+            key={index}
+            bisonBalance={data}
+            onClick={() => {
+              navigate('BRC20TokenScreen', { tokenBalance: data, ticker: data.ticker });
+            }}
+          />
+        ))}
+      </Row>
+
+      <Row justifyCenter mt="lg">
+        <Pagination
+          pagination={pagination}
+          total={total}
+          onChange={(pagination) => {
+            setPagination(pagination);
+          }}
+        />
+      </Row>
+    </Column>
+  );
+}
+
+function BitcoinBalance() {
   // const navigate = useNavigate();
   const currentAccount = useCurrentAccount();
 
@@ -533,6 +594,49 @@ function BisonBitcoinBalance() {
       // onClick={() => {
       //   navigate('BRC20TokenScreen', { tokenBalance: data, ticker: data.ticker });
       // }}
+    />
+
+  );
+}
+
+function BisonBalanceList() {
+  // const navigate = useNavigate();
+  const currentAccount = useCurrentAccount();
+
+  const [total, setTotal] = useState('1000');
+
+  const tools = useTools();
+  const fetchData = async () => {
+    const btcEndpointUrl = 'https://testnet.bisonlabs.io/btc_endpoint/balance';
+    const data = { address: currentAccount.address };
+    try {
+      const response = await fetch(btcEndpointUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+      const res = await response.json();
+      setTotal(res.balance);
+      console.log('fetched btc balance from bison testnet');
+    } catch (e) {
+      tools.toastError((e as Error).message);
+    }
+  };
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  // emulates interface for bison data structure just to reuse bison balance card component
+  const bisonBalanceData = {
+    ticker: 'LABB',
+    balance: Number(total)
+  };
+
+  return (
+    <BisonBalanceCard
+      bisonBalance={bisonBalanceData}
     />
   );
 }

@@ -1,0 +1,23 @@
+.select-container {
+  padding: 1rem;
+}
+
+.select-label {
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  color: #ffffff; /* gray-700 */
+}
+
+.select {
+  background-color: #2f302f; /* gray-50 */
+  border: none; /* gray-300 */
+  color: #ffffff; /* gray-900 */
+  border-radius: 0.375rem; /* rounded-lg */
+  padding: 0.625rem; /* p-2.5 */
+  width: 100%;
+}
+
+.select:focus {
+  ring-color: #3B82F6; /* blue-500 */
+  border-color: #3B82F6; /* blue-500 */
+}

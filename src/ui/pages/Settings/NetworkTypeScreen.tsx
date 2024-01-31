@@ -8,6 +8,7 @@ import { useNavigate } from '../MainRoute';
 
 export default function NetworkTypeScreen() {
   const networkType = useNetworkType();
+  console.log(networkType)
   const changeNetworkType = useChangeNetworkTypeCallback();
   const reloadAccounts = useReloadAccounts();
   const tools = useTools();

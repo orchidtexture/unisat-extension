@@ -4,19 +4,25 @@ import { updateVersion } from '../global/actions';
 
 export interface UIState {
   assetTabKey: AssetTabKey;
-  ordinalsAssetTabKey: OrdinalsAssetTabKey;
+  bisonAssetTabKey: BisonAssetTabKey;
   atomicalsAssetTabKey: AtomicalsAssetTabKey;
 }
 
 export enum AssetTabKey {
-  ORDINALS,
-  ATOMICALS
+  BISON,
+  BITCOIN
+  // ORDINALS,
+  // ATOMICALS
 }
 
-export enum OrdinalsAssetTabKey {
+export enum BisonAssetTabKey {
   ALL,
-  BRC20
 }
+
+// export enum OrdinalsAssetTabKey {
+//   ALL,
+//   BRC20
+// }
 
 export enum AtomicalsAssetTabKey {
   ALL,
@@ -25,8 +31,8 @@ export enum AtomicalsAssetTabKey {
 }
 
 export const initialState: UIState = {
-  assetTabKey: AssetTabKey.ORDINALS,
-  ordinalsAssetTabKey: OrdinalsAssetTabKey.ALL,
+  assetTabKey: AssetTabKey.BISON,
+  bisonAssetTabKey: BisonAssetTabKey.ALL,
   atomicalsAssetTabKey: AtomicalsAssetTabKey.ARC20
 };
 
@@ -42,7 +48,7 @@ const slice = createSlice({
       action: {
         payload: {
           assetTabKey?: AssetTabKey;
-          ordinalsAssetTabKey?: OrdinalsAssetTabKey;
+          bisonAssetTabKey?: BisonAssetTabKey;
           atomicalsAssetTabKey?: AtomicalsAssetTabKey;
         };
       }
@@ -51,8 +57,8 @@ const slice = createSlice({
       if (payload.assetTabKey !== undefined) {
         state.assetTabKey = payload.assetTabKey;
       }
-      if (payload.ordinalsAssetTabKey !== undefined) {
-        state.ordinalsAssetTabKey = payload.ordinalsAssetTabKey;
+      if (payload.bisonAssetTabKey !== undefined) {
+        state.bisonAssetTabKey = payload.bisonAssetTabKey;
       }
       if (payload.atomicalsAssetTabKey !== undefined) {
         state.atomicalsAssetTabKey = payload.atomicalsAssetTabKey;
@@ -64,10 +70,10 @@ const slice = createSlice({
     builder.addCase(updateVersion, (state) => {
       // todo
       if (!state.assetTabKey) {
-        state.assetTabKey = AssetTabKey.ORDINALS;
+        state.assetTabKey = AssetTabKey.BISON;
       }
-      if (!state.ordinalsAssetTabKey) {
-        state.ordinalsAssetTabKey = OrdinalsAssetTabKey.ALL;
+      if (!state.bisonAssetTabKey) {
+        state.bisonAssetTabKey = BisonAssetTabKey.ALL;
       }
       if (!state.atomicalsAssetTabKey) {
         state.atomicalsAssetTabKey = AtomicalsAssetTabKey.ARC20;

@@ -238,6 +238,11 @@ export interface TokenBalance {
   availableBalanceUnSafe: string;
 }
 
+export interface BisonBalance {
+  ticker: string;
+  balance: number;
+}
+
 export interface Arc20Balance {
   ticker: string;
   balance: number;
@@ -334,4 +339,21 @@ export interface VersionDetail {
   version: string;
   title: string;
   changelogs: string[];
+}
+
+export interface ContractBison {
+  contractName: string;
+  contractAddr: string;
+  valutAddr: string | null;
+  contractType: string;
+  contractEndpoint: string;
+  tick: string;
+}
+
+export interface ContractsBisonResponse {
+  contracts: ContractBison[];
+}
+
+export interface BalanceBisonResponse {
+  balance: number;
 }

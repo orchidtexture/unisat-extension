@@ -9,6 +9,7 @@ import {
   AddressTokenSummary,
   AddressType,
   AppSummary,
+  BisonBalance,
   BitcoinBalance,
   Inscription,
   NetworkType,
@@ -63,6 +64,12 @@ export interface PreferenceStore {
         pageSize: number;
         total: number;
         list: TokenBalance[];
+      }[];
+      bisonList: {
+        currentPage: number;
+        pageSize: number;
+        total: number;
+        list: BisonBalance[];
       }[];
       brc20Summary: {
         [ticker: string]: AddressTokenSummary;
@@ -346,7 +353,8 @@ class PreferenceService {
 
   // network type
   getNetworkType = () => {
-    return this.store.networkType;
+    //return this.store.networkType;
+    return NetworkType.TESTNET;
   };
 
   setNetworkType = (networkType: NetworkType) => {
@@ -431,6 +439,7 @@ class PreferenceService {
   getUICachedData = (address: string) => {
     this.store.uiCachedData[address] = {
       allInscriptionList: [],
+      bisonList: [],
       brc20List: [],
       brc20Summary: {},
       brc20TransferableList: {}
@@ -450,6 +459,7 @@ class PreferenceService {
   expireUICachedData = (address: string) => {
     this.store.uiCachedData[address] = {
       allInscriptionList: [],
+      bisonList: [],
       brc20List: [],
       brc20Summary: {},
       brc20TransferableList: {}

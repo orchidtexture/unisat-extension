@@ -12,6 +12,7 @@ import { DisplayedKeyring, Keyring } from '@/background/service/keyring';
 import {
   ADDRESS_TYPES,
   AddressFlagType,
+  BISONAPI_URL_TESTNET,
   BRAND_ALIAN_TYPE_TEXT,
   CHAINS_ENUM,
   COIN_NAME,
@@ -26,7 +27,10 @@ import {
   Account,
   AddressType,
   AddressUserToSignInput,
+  BalanceBisonResponse,
+  BisonBalance,
   BitcoinBalance,
+  ContractBison,
   NetworkType,
   PublicKeyUserToSignInput,
   SignPsbtOptions,
@@ -41,7 +45,7 @@ import { ECPair, bitcoin } from '@unisat/wallet-sdk/lib/bitcoin-core';
 import { signMessageOfBIP322Simple } from '@unisat/wallet-sdk/lib/message';
 import { toPsbtNetwork } from '@unisat/wallet-sdk/lib/network';
 import { toXOnly } from '@unisat/wallet-sdk/lib/utils';
-
+import axios from 'axios';
 import { ContactBookItem } from '../service/contactBook';
 import { OpenApiService } from '../service/openapi';
 import { ConnectedSite } from '../service/permission';
@@ -1246,6 +1250,47 @@ export class WalletController extends BaseController {
 
     const { total, list } = await openapiService.getBRC20List(address, cursor, size);
     uiCachedData.brc20List[currentPage] = {
+      currentPage,
+      pageSize,
+      total,
+      list
+    };
+    return {
+      currentPage,
+      pageSize,
+      total,
+      list
+    };
+  };
+
+  getBisonList = async (address: string, currentPage: number, pageSize: number) => {
+    const uiCachedData = preferenceService.getUICachedData(address);
+
+    const res = await axios.get(`${BISONAPI_URL_TESTNET}/sequencer_endpoint/contracts_list`)
+    const total = res.data?.contracts.length
+    const contracts: ContractBison[] = res.data?.contracts
+
+    const balancePromises = contracts.map(contract => {
+      const balanceEndpoint = `${contract.contractEndpoint}/balance`;
+      return axios.post<BalanceBisonResponse>(balanceEndpoint, {
+        address: ''
+      })
+        .then(balanceResponse => ({
+          ticker: contract.tick,
+          balance: balanceResponse.data.balance
+        }))
+        .catch(() => null); // En caso de error en una solicitud específica, retorna null
+    });
+
+    console.log()
+
+    // Ejecutar todas las solicitudes de balance
+    const allBalances = await Promise.all(balancePromises);
+
+    // Filtrar los balances que sean mayores que 0 y no sean null
+    const list = allBalances.filter(balance => balance && balance.balance > 0) as BisonBalance[];
+
+    uiCachedData.bisonList[currentPage] = {
       currentPage,
       pageSize,
       total,

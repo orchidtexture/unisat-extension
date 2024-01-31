@@ -237,6 +237,8 @@ export const INTERNAL_REQUEST_SESSION = {
 export const OPENAPI_URL_MAINNET = 'https://wallet-api.unisat.io/v5';
 export const OPENAPI_URL_TESTNET = 'https://wallet-api-testnet.unisat.io/v5';
 
+export const BISONAPI_URL_TESTNET = 'https://testnet.bisonlabs.io';
+
 export const EVENTS = {
   broadcastToUI: 'broadcastToUI',
   broadcastToBackground: 'broadcastToBackground',
