@@ -556,7 +556,7 @@ export default function SignPsbt({
     return (
       <Layout>
         <Content itemsCenter justifyCenter>
-          <Icon size={fontSizes.xxxl} color="gold">
+          <Icon size={fontSizes.xxxl} color="kondor_primary">
             <LoadingOutlined />
           </Icon>
         </Content>
@@ -648,8 +648,14 @@ export default function SignPsbt({
                                 <Row>
                                   <AddressText address={v.address} color={isToSign ? 'white' : 'textDim'} />
                                   {isToSign && (
-                                    <Row style={{ borderWidth: 1, borderColor: 'gold', borderRadius: 5, padding: 2 }}>
-                                      <Text text="to sign" color="gold" size="xs" />
+                                    <Row
+                                      style={{
+                                        borderWidth: 1,
+                                        borderColor: 'kondor_primary',
+                                        borderRadius: 5,
+                                        padding: 2
+                                      }}>
+                                      <Text text="to sign" color="kondor_primary" size="xs" />
                                     </Row>
                                   )}
                                 </Row>
@@ -709,7 +715,7 @@ export default function SignPsbt({
                             {atomicals_ft.length > 0 && (
                               <Row>
                                 <Column justifyCenter>
-                                  <Text text={`ARC20`} color={isToSign ? 'white' : 'textDim'} />
+                                  <Text text={'ARC20'} color={isToSign ? 'white' : 'textDim'} />
                                   <Row overflowX gap="lg" style={{ width: 280 }} pb="lg">
                                     {atomicals_ft.map((w) => (
                                       <Arc20PreviewCard key={w.ticker} ticker={w.ticker || ''} amt={v.value} />
@@ -798,7 +804,7 @@ export default function SignPsbt({
                           {atomicals_ft.length > 0 && (
                             <Row>
                               <Column justifyCenter>
-                                <Text text={`ARC20`} color={isMyAddress ? 'white' : 'textDim'} />
+                                <Text text={'ARC20'} color={isMyAddress ? 'white' : 'textDim'} />
                                 <Row overflowX gap="lg" style={{ width: 280 }} pb="lg">
                                   {atomicals_ft.map((w) => (
                                     <Arc20PreviewCard key={w.ticker} ticker={w.ticker || ''} amt={v.value} />

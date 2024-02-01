@@ -39,7 +39,7 @@ export default function BRC20BalanceCard(props: BRC20BalanceCardProps) {
       onClick={onClick}>
       <Column full>
         <Row justifyBetween itemsCenter>
-          <Text text={ticker} color="gold" />
+          <Text text={ticker} color="kondor_primary" />
           <Tooltip
             title="The transferable amount is the balance that has been inscribed into transfer inscriptions but has not yet been sent."
             overlayStyle={{

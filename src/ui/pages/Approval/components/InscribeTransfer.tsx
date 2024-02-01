@@ -368,7 +368,13 @@ function InscribeConfirmStep({ contextData, updateContextData }: StepProps) {
             <Text text="Inscribe TRANSFER" preset="title-bold" textCenter mt="lg" />
 
             <Column justifyCenter style={{ height: 250 }}>
-              <Text text={`${amount} ${tokenBalance.ticker}`} preset="title-bold" size="xxl" color="gold" textCenter />
+              <Text
+                text={`${amount} ${tokenBalance.ticker}`}
+                preset="title-bold"
+                size="xxl"
+                color="kondor_primary"
+                textCenter
+              />
 
               <Column mt="xxl">
                 <Text text="Preview" preset="sub-bold" />
@@ -413,8 +419,8 @@ function InscribeConfirmStep({ contextData, updateContextData }: StepProps) {
                 )}
               </Row>
               <Row justifyBetween>
-                <Text text="Total" color="gold" />
-                <Text text={`${totalFee} BTC`} color="gold" />
+                <Text text="Total" color="kondor_primary" />
+                <Text text={`${totalFee} BTC`} color="kondor_primary" />
               </Row>
             </Column>
           </Column>

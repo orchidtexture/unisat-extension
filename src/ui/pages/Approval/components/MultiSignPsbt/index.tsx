@@ -286,7 +286,7 @@ export default function MultiSignPsbt({
     return (
       <Layout>
         <Content itemsCenter justifyCenter>
-          <Icon size={fontSizes.xxxl} color="gold">
+          <Icon size={fontSizes.xxxl} color="kondor_primary">
             <LoadingOutlined />
           </Icon>
         </Content>
@@ -374,8 +374,14 @@ export default function MultiSignPsbt({
                             <Row>
                               <AddressText address={v.address} color={isToSign ? 'white' : 'textDim'} />
                               {isToSign && (
-                                <Row style={{ borderWidth: 1, borderColor: 'gold', borderRadius: 5, padding: 2 }}>
-                                  <Text text="to sign" color="gold" size="xs" />
+                                <Row
+                                  style={{
+                                    borderWidth: 1,
+                                    borderColor: 'kondor_primary',
+                                    borderRadius: 5,
+                                    padding: 2
+                                  }}>
+                                  <Text text="to sign" color="kondor_primary" size="xs" />
                                 </Row>
                               )}
                             </Row>

@@ -7,10 +7,7 @@ import { AddressText } from '@/ui/components/AddressText';
 import { WarningPopover } from '@/ui/components/WarningPopover';
 import WebsiteBar from '@/ui/components/WebsiteBar';
 import { useAccountAddress, useCurrentAccount } from '@/ui/state/accounts/hooks';
-import {
-  usePrepareSendBTCCallback,
-  usePrepareSendOrdinalsInscriptionsCallback
-} from '@/ui/state/transactions/hooks';
+import { usePrepareSendBTCCallback, usePrepareSendOrdinalsInscriptionsCallback } from '@/ui/state/transactions/hooks';
 import { colors } from '@/ui/theme/colors';
 import { fontSizes } from '@/ui/theme/font';
 import { copyToClipboard, satoshisToAmount, shortAddress, useApproval, useWallet } from '@/ui/utils';
@@ -208,7 +205,6 @@ export default function SignPsbt({
 
   const [txInfo, setTxInfo] = useState<TxInfo>(initTxInfo);
 
-
   const prepareSendBTC = usePrepareSendBTCCallback();
   const prepareSendOrdinalsInscriptions = usePrepareSendOrdinalsInscriptionsCallback();
 
@@ -333,7 +329,6 @@ export default function SignPsbt({
     return true;
   }, [txInfo.decodedPsbt, txInfo.toSignInputs]);
 
-
   const hasHighRisk = useMemo(() => {
     if (txInfo && txInfo.decodedPsbt) {
       return txInfo.decodedPsbt.risks.find((v) => v.level === 'high') ? true : false;
@@ -346,7 +341,7 @@ export default function SignPsbt({
     return (
       <Layout>
         <Content itemsCenter justifyCenter>
-          <Icon size={fontSizes.xxxl} color="gold">
+          <Icon size={fontSizes.xxxl} color="kondor_primary">
             <LoadingOutlined />
           </Icon>
         </Content>

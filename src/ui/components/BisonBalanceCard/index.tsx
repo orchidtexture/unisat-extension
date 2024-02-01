@@ -17,10 +17,7 @@ export interface BisonBalanceCardProps {
 
 export default function BisonBalanceCard(props: BisonBalanceCardProps) {
   const {
-    bisonBalance: {
-      ticker,
-      balance,
-    },
+    bisonBalance: { ticker, balance },
     onClick
   } = props;
   return (
@@ -35,7 +32,7 @@ export default function BisonBalanceCard(props: BisonBalanceCardProps) {
       onClick={onClick}>
       <Column full>
         <Row justifyBetween itemsCenter>
-          <Text text={ticker} color="gold" />
+          <Text text={ticker} color="kondor_primary" />
           <Tooltip
             title="The transferable amount is the balance that has been inscribed into transfer inscriptions but has not yet been sent."
             overlayStyle={{

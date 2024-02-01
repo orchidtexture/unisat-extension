@@ -42,7 +42,7 @@ export function AddressTypeCard(props: AddressTypeCardProps) {
 
             <Row>
               {assets.total_inscription > 0 && (
-                <Text text={`${assets.total_inscription} INSCRIPTIONS`} color="gold" preset="bold" />
+                <Text text={`${assets.total_inscription} INSCRIPTIONS`} color="kondor_primary" preset="bold" />
               )}
             </Row>
           </Row>

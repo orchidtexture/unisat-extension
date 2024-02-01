@@ -28,7 +28,7 @@ export default function Arc20BalanceCard(props: Arc2020BalanceCardProps) {
       onClick={onClick}>
       <Column full>
         <Row justifyBetween itemsCenter>
-          <Text text={ticker} color="gold" />
+          <Text text={ticker} color="kondor_primary" />
         </Row>
 
         <Row justifyBetween>

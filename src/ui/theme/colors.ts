@@ -1,7 +1,7 @@
 // TODO: write documentation for colors and palette in own markdown file and add links from here
 
 const palette = {
-  kondor_primary: '#00d6c9',
+  kondor_primary: '#6fee8d',
   white: '#ffffff',
   white_muted: 'rgba(255, 255, 255, 0.5)',
   black: '#000000',

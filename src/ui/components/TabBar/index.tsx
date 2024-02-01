@@ -57,7 +57,7 @@ export function TabBar(props: TabBarProps) {
                 { width: 20, height: 20 },
                 reach
                   ? {
-                      backgroundColor: colors.gold
+                      backgroundColor: colors.kondor_primary
                     }
                   : {
                       backgroundColor: colors.bg2
@@ -91,12 +91,17 @@ export function TabBar(props: TabBarProps) {
             return (
               <Column
                 key={v.key}
-                style={{padding:'8px'}}
+                style={{ padding: '8px' }}
                 classname={isSelected ? 'selected-tab' : ''}
                 onClick={() => {
                   setTabKey(v.key);
                 }}>
-                <Text text={v.label} size={'md'} preset={isSelected ? 'bold' : 'regular'} color={isSelected ? 'gold' : 'white'} />
+                <Text
+                  text={v.label}
+                  size={'md'}
+                  preset={isSelected ? 'bold' : 'regular'}
+                  color={isSelected ? 'kondor_primary' : 'white'}
+                />
               </Column>
             );
           }
@@ -123,11 +128,11 @@ export function TabBar(props: TabBarProps) {
               <Column
                 key={v.key}
                 style={{ borderWidth: 1, borderRadius: 20, backgroundColor: '#322D1F' }}
-                color={isSelected ? 'gold' : 'white_muted'}
+                color={isSelected ? 'kondor_primary' : 'white_muted'}
                 onClick={() => {
                   setTabKey(v.key);
                 }}>
-                <Text text={v.label} size="xs" color={isSelected ? 'gold' : 'white_muted'} mx="md" my="sm" />
+                <Text text={v.label} size="xs" color={isSelected ? 'kondor_primary' : 'white_muted'} mx="md" my="sm" />
               </Column>
             );
           }
@@ -153,7 +158,7 @@ export function TabBar(props: TabBarProps) {
               onClick={() => {
                 setTabKey(v.key);
               }}>
-              <Text text={v.label} color={isSelected ? 'gold' : 'white'} />
+              <Text text={v.label} color={isSelected ? 'kondor_primary' : 'white'} />
             </Column>
           );
         }
