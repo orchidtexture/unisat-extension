@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { COIN_DUST } from '@/shared/constant';
 import { Inscription, RawTxInfo } from '@/shared/types';
-import { Button, Column, Content, Icon, Input, Row, Text } from '@/ui/components';
+import { Button, Column, Content, Input, Row, Text } from '@/ui/components';
 import { useTools } from '@/ui/components/ActionComponent';
 import { FeeRateBar } from '@/ui/components/FeeRateBar';
 import { RBFBar } from '@/ui/components/RBFBar';
@@ -120,9 +120,9 @@ export default function TxBitcoinCreateScreen() {
 
   return (
     <Content style={{ padding: '0px 16px 24px' }}>
-      <Row justifyCenter>
+      {/* <Row justifyCenter>
         <Icon icon="btc" size={50} />
-      </Row>
+      </Row> */}
 
       <Column mt="lg">
         <Text text="Recipient" preset="regular" color="textDim" />

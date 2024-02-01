@@ -18,7 +18,7 @@ export default function Arc20BalanceCard(props: Arc2020BalanceCardProps) {
   return (
     <Card
       style={{
-        backgroundColor: '#141414',
+        backgroundColor: '#10171A',
         borderColor: 'rgba(255,255,255,0.1)',
         borderWidth: 1,
         height: 120,
