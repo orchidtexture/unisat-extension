@@ -1,31 +1,34 @@
-import { BISONAPI_URL_TESTNET } from '@/shared/constant';
-import { BisonBalance, ContractBison, ContractsBisonResponse, Inscription } from '@/shared/types';
-import { Button, Column, Content, Header, Input, Layout, Row, Text } from '@/ui/components';
-import { useTools } from '@/ui/components/ActionComponent';
-import { useNavigate } from '@/ui/pages/MainRoute';
-import {
-  useBitcoinTx,
-  useFetchUtxosCallback,
-} from '@/ui/state/transactions/hooks';
-import { colors } from '@/ui/theme/colors';
-import { satoshisToAmount } from '@/ui/utils';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
+
+import { BISONAPI_URL_TESTNET } from '@/shared/constant';
+import { BisonBalance, ContractBison, ContractsBisonResponse, Inscription } from '@/shared/types';
+import { Button, Column, Content, Input, Row, Text } from '@/ui/components';
+import { useTools } from '@/ui/components/ActionComponent';
+import { useNavigate } from '@/ui/pages/MainRoute';
+import { useAppDispatch } from '@/ui/state/hooks';
+import { useBitcoinTx, useFetchUtxosCallback } from '@/ui/state/transactions/hooks';
+import { useAssetTabKey } from '@/ui/state/ui/hooks';
+import { colors } from '@/ui/theme/colors';
+import { satoshisToAmount } from '@/ui/utils';
+
 import './Styles.css';
 
 const getBisonContracts = async (): Promise<ContractsBisonResponse> => {
-  const res = await axios.get(`${BISONAPI_URL_TESTNET}/sequencer_endpoint/contracts_list`)
-  const contracts: ContractBison[] = res.data?.contracts
-  return {contracts};
+  const res = await axios.get(`${BISONAPI_URL_TESTNET}/sequencer_endpoint/contracts_list`);
+  const contracts: ContractBison[] = res.data?.contracts;
+  return { contracts };
 };
 
-export default function TxCreateScreen() {
+export default function TxBisonCreateScreen() {
   const [contracts, setContracts] = useState<ContractBison[]>([]);
   const [selectedContract, setSelectedContract] = useState<string>('');
   const [balance, setBalance] = useState<BisonBalance | null>(null);
+  const dispatch = useAppDispatch();
+  const assetTabKey = useAssetTabKey();
 
   useEffect(() => {
-    getBisonContracts().then(response => {
+    getBisonContracts().then((response) => {
       setContracts(response.contracts);
     });
   }, []);
@@ -98,85 +101,67 @@ export default function TxCreateScreen() {
     });
   }, []);
 
-
   return (
-    <Layout>
-      <Header
-        onBack={() => {
-          window.history.go(-1);
-        }}
-        title="Send Bison token"
-      />
-      <Content style={{ padding: '0px 16px 24px' }}>
-        <Row justifyCenter>
-          <Text text="Select token" preset="regular" color="textDim" />
-          <select
-            id="contract-select"
-            className="select"
-            value={selectedContract}
-            onChange={handleContractChange}
-          >
-            <option value="">Select a contract...</option>
-            {contracts.map(contract => (
-              <option key={contract.contractAddr} value={contract.contractAddr}>
-                {contract.contractName}
-              </option>
-            ))}
-          </select>
-        </Row>
+    <Content style={{ padding: '0px 16px 24px' }}>
+      <Row justifyCenter>
+        <Text text="Select token" preset="regular" color="textDim" />
+        <select id="contract-select" className="select" value={selectedContract} onChange={handleContractChange}>
+          <option value="">Select a contract...</option>
+          {contracts.map((contract) => (
+            <option key={contract.contractAddr} value={contract.contractAddr}>
+              {contract.contractName}
+            </option>
+          ))}
+        </select>
+      </Row>
 
-        <Column mt="lg">
-          <Text text="Recipient" preset="regular" color="textDim" />
-          <Input
-            preset="address"
-            addressInputData={toInfo}
-            onAddressInputChange={(val) => {
-              setToInfo(val);
-            }}
-            autoFocus={true}
-          />
-        </Column>
+      <Column mt="lg">
+        <Text text="Recipient" preset="regular" color="textDim" />
+        <Input
+          preset="address"
+          addressInputData={toInfo}
+          onAddressInputChange={(val) => {
+            setToInfo(val);
+          }}
+          autoFocus={true}
+        />
+      </Column>
 
-        <Column mt="lg">
-          <Row justifyBetween>
-            <Text text="Balance" color="textDim" />
-            <Row
-              onClick={() => {
-                setAutoAdjust(true);
-              }}>
-              <Text
-                text="MAX"
-                preset="sub"
-                style={{ color: autoAdjust ? colors.yellow_light : colors.white_muted }}
-              />
-              <Text text={`${balance?.balance || 0} ${balance?.ticker || ''}`} preset="bold" size="sm" />
-            </Row>
+      <Column mt="lg">
+        <Row justifyBetween>
+          <Text text="Balance" color="textDim" />
+          <Row
+            onClick={() => {
+              setAutoAdjust(true);
+            }}>
+            <Text text="MAX" preset="sub" style={{ color: autoAdjust ? colors.yellow_light : colors.white_muted }} />
+            <Text text={`${balance?.balance || 0} ${balance?.ticker || ''}`} preset="bold" size="sm" />
           </Row>
-          <Input
-            preset="amount"
-            placeholder={'Amount'}
-            defaultValue={inputAmount}
-            value={inputAmount}
-            onAmountInputChange={(amount) => {
-              if (autoAdjust == true) {
-                setAutoAdjust(false);
-              }
-              setInputAmount(amount);
-            }}
-          />
-        </Column>
+        </Row>
+        <Input
+          preset="amount"
+          placeholder={'Amount'}
+          defaultValue={inputAmount}
+          value={inputAmount}
+          onAmountInputChange={(amount) => {
+            if (autoAdjust == true) {
+              setAutoAdjust(false);
+            }
+            setInputAmount(amount);
+          }}
+        />
+      </Column>
 
-        {error && <Text text={error} color="error" />}
+      {error && <Text text={error} color="error" />}
 
-        <Button
-          disabled={disabled}
-          preset="primary"
-          text="Next"
-          onClick={(e) => {
-            console.log('next button')
-            navigate('TxBisonConfirmScreen', { });
-          }}></Button>
-      </Content>
-    </Layout>
+      <Button
+        disabled={disabled}
+        preset="primary"
+        text="Next"
+        onClick={(e) => {
+          console.log('next button');
+          navigate('TxBisonConfirmScreen', {});
+        }}></Button>
+    </Content>
   );
 }

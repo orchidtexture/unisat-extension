@@ -1,32 +1,86 @@
-import BigNumber from 'bignumber.js';
-import { useEffect, useMemo, useState } from 'react';
+import { Tabs } from 'antd';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 
-import { COIN_DUST } from '@/shared/constant';
-import { Inscription, RawTxInfo } from '@/shared/types';
-import { Button, Column, Content, Header, Icon, Input, Layout, Row, Text } from '@/ui/components';
+import { BISONAPI_URL_TESTNET } from '@/shared/constant';
+import { BisonBalance, ContractBison, ContractsBisonResponse, Inscription } from '@/shared/types';
+import { Content, Header, Layout } from '@/ui/components';
 import { useTools } from '@/ui/components/ActionComponent';
-import { FeeRateBar } from '@/ui/components/FeeRateBar';
-import { RBFBar } from '@/ui/components/RBFBar';
 import { useNavigate } from '@/ui/pages/MainRoute';
-import { useAccountBalance } from '@/ui/state/accounts/hooks';
-import {
-  useBitcoinTx,
-  useFetchUtxosCallback,
-  usePrepareSendBTCCallback,
-  useSafeBalance
-} from '@/ui/state/transactions/hooks';
-import { colors } from '@/ui/theme/colors';
-import { amountToSatoshis, isValidAddress, satoshisToAmount } from '@/ui/utils';
+import { useAppDispatch } from '@/ui/state/hooks';
+import { useBitcoinTx, useFetchUtxosCallback } from '@/ui/state/transactions/hooks';
+import { useAssetTabKey } from '@/ui/state/ui/hooks';
+import { AssetTabKey, uiActions } from '@/ui/state/ui/reducer';
+import { satoshisToAmount } from '@/ui/utils';
+
+import './Styles.css';
+import TxBisonCreateScreen from './TxBisonCreateScreen';
+import TxBitcoinCreateScreen from './TxBitcoinCreateScreen';
+
+const getBisonContracts = async (): Promise<ContractsBisonResponse> => {
+  const res = await axios.get(`${BISONAPI_URL_TESTNET}/sequencer_endpoint/contracts_list`);
+  const contracts: ContractBison[] = res.data?.contracts;
+  return { contracts };
+};
 
 export default function TxCreateScreen() {
-  const accountBalance = useAccountBalance();
-  const safeBalance = useSafeBalance();
+  const [contracts, setContracts] = useState<ContractBison[]>([]);
+  const [selectedContract, setSelectedContract] = useState<string>('');
+  const [balance, setBalance] = useState<BisonBalance | null>(null);
+  const dispatch = useAppDispatch();
+  const assetTabKey = useAssetTabKey();
+
+  useEffect(() => {
+    getBisonContracts().then((response) => {
+      setContracts(response.contracts);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (selectedContract) {
+      fetchBalance();
+    } else {
+      setBalance(null);
+    }
+  }, [selectedContract]);
+
+  const handleContractChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedContract(e.target.value);
+  };
+
+  const fetchBalance = async () => {
+    try {
+      // const currentAccount = useCurrentAccount();
+
+      // const contract = contracts.find(c => c.contractAddr === selectedContract);
+      // if (!contract) return;
+
+      // const balanceEndpoint = `${contract.contractEndpoint}/balance`;
+      // const balanceResponse = await axios.post<BalanceBisonResponse>(balanceEndpoint, {
+      //   address: currentAccount.address
+      // });
+
+      // const result: BisonBalance = {
+      //   ticker: contract.tick,
+      //   balance: balanceResponse.data.balance
+      // };
+
+      setBalance({
+        ticker: 'bBTC',
+        balance: 0.002
+      });
+    } catch (error) {
+      console.error('Error:', error);
+      setBalance(null);
+    }
+  };
+
   const navigate = useNavigate();
   const bitcoinTx = useBitcoinTx();
   const [inputAmount, setInputAmount] = useState(
     bitcoinTx.toSatoshis > 0 ? satoshisToAmount(bitcoinTx.toSatoshis) : ''
   );
-  const [disabled, setDisabled] = useState(true);
+  const [disabled, setDisabled] = useState(false);
   const [toInfo, setToInfo] = useState<{
     address: string;
     domain: string;
@@ -50,73 +104,18 @@ export default function TxCreateScreen() {
     });
   }, []);
 
-  const prepareSendBTC = usePrepareSendBTCCallback();
-
-  const safeSatoshis = useMemo(() => {
-    return amountToSatoshis(safeBalance);
-  }, [safeBalance]);
-
-  const toSatoshis = useMemo(() => {
-    if (!inputAmount) return 0;
-    return amountToSatoshis(inputAmount);
-  }, [inputAmount]);
-
-  const dustAmount = useMemo(() => satoshisToAmount(COIN_DUST), [COIN_DUST]);
-
-  const [feeRate, setFeeRate] = useState(5);
-
-  const [rawTxInfo, setRawTxInfo] = useState<RawTxInfo>();
-
-  const [enableRBF, setEnableRBF] = useState(false);
-  useEffect(() => {
-    setError('');
-    setDisabled(true);
-
-    if (!isValidAddress(toInfo.address)) {
-      return;
+  const tabItems = [
+    {
+      key: AssetTabKey.BISON,
+      label: 'Bison asset',
+      children: <TxBisonCreateScreen />
+    },
+    {
+      key: AssetTabKey.BITCOIN,
+      label: 'Bitcoin L1',
+      children: <TxBitcoinCreateScreen />
     }
-    if (!toSatoshis) {
-      return;
-    }
-    if (toSatoshis < COIN_DUST) {
-      setError(`Amount must be at least ${dustAmount} BTC`);
-      return;
-    }
-
-    if (toSatoshis > safeSatoshis) {
-      setError('Amount exceeds your available balance');
-      return;
-    }
-
-    if (feeRate <= 0) {
-      return;
-    }
-
-    if (toInfo.address == bitcoinTx.toAddress && toSatoshis == bitcoinTx.toSatoshis && feeRate == bitcoinTx.feeRate) {
-      //Prevent repeated triggering caused by setAmount
-      setDisabled(false);
-      return;
-    }
-
-    prepareSendBTC({ toAddressInfo: toInfo, toAmount: toSatoshis, feeRate, enableRBF })
-      .then((data) => {
-        // if (data.fee < data.estimateFee) {
-        //   setError(`Network fee must be at leat ${data.estimateFee}`);
-        //   return;
-        // }
-        setRawTxInfo(data);
-        setDisabled(false);
-      })
-      .catch((e) => {
-        console.log(e);
-        setError(e.message);
-      });
-  }, [toInfo, inputAmount, feeRate, enableRBF]);
-
-  const showSafeBalance = useMemo(
-    () => !new BigNumber(accountBalance.amount).eq(new BigNumber(safeBalance)),
-    [accountBalance.amount, safeBalance]
-  );
+  ];
 
   return (
     <Layout>
@@ -124,104 +123,18 @@ export default function TxCreateScreen() {
         onBack={() => {
           window.history.go(-1);
         }}
-        title="Send BTC"
+        title="Send"
       />
       <Content style={{ padding: '0px 16px 24px' }}>
-        <Row justifyCenter>
-          <Icon icon="btc" size={50} />
-        </Row>
-
-        <Column mt="lg">
-          <Text text="Recipient" preset="regular" color="textDim" />
-          <Input
-            preset="address"
-            addressInputData={toInfo}
-            onAddressInputChange={(val) => {
-              setToInfo(val);
-            }}
-            autoFocus={true}
-          />
-        </Column>
-
-        <Column mt="lg">
-          <Row justifyBetween>
-            <Text text="Balance" color="textDim" />
-            {showSafeBalance ? (
-              <Text text={`${accountBalance.amount} BTC`} preset="bold" size="sm" />
-            ) : (
-              <Row
-                onClick={() => {
-                  setAutoAdjust(true);
-                  setInputAmount(accountBalance.amount);
-                }}>
-                <Text
-                  text="MAX"
-                  preset="sub"
-                  style={{ color: autoAdjust ? colors.yellow_light : colors.white_muted }}
-                />
-                <Text text={`${accountBalance.amount} BTC`} preset="bold" size="sm" />
-              </Row>
-            )}
-          </Row>
-          <Row justifyBetween>
-            <Text text="Unconfirmed BTC" color="textDim" />
-            <Text text={`${accountBalance.pending_btc_amount} BTC`} size="sm" preset="bold" color="textDim" />
-          </Row>
-          {showSafeBalance && (
-            <Row justifyBetween>
-              <Text text="Available (safe to send)" color="textDim" />
-
-              <Row
-                onClick={() => {
-                  setAutoAdjust(true);
-                  setInputAmount(safeBalance.toString());
-                }}>
-                <Text text={'MAX'} color={autoAdjust ? 'yellow' : 'textDim'} size="sm" />
-                <Text text={`${safeBalance} BTC`} preset="bold" size="sm" />
-              </Row>
-            </Row>
-          )}
-          <Input
-            preset="amount"
-            placeholder={'Amount'}
-            defaultValue={inputAmount}
-            value={inputAmount}
-            onAmountInputChange={(amount) => {
-              if (autoAdjust == true) {
-                setAutoAdjust(false);
-              }
-              setInputAmount(amount);
-            }}
-          />
-        </Column>
-
-        <Column mt="lg">
-          <Text text="Fee" color="textDim" />
-
-          <FeeRateBar
-            onChange={(val) => {
-              setFeeRate(val);
-            }}
-          />
-        </Column>
-
-        <Column mt="lg">
-          <RBFBar
-            onChange={(val) => {
-              setEnableRBF(val);
-            }}
-          />
-        </Column>
-
-        {error && <Text text={error} color="error" />}
-
-        <Button
-          disabled={disabled}
-          preset="primary"
-          text="Next"
-          onClick={(e) => {
-            navigate('TxConfirmScreen', { rawTxInfo });
-          }}></Button>
+        <Tabs
+          size={'small'}
+          defaultActiveKey={assetTabKey as unknown as string}
+          activeKey={assetTabKey as unknown as string}
+          items={tabItems as unknown as any[]}
+          onTabClick={(key) => {
+            dispatch(uiActions.updateAssetTabScreen({ assetTabKey: key as unknown as AssetTabKey }));
+          }}
+        />
       </Content>
     </Layout>
   );

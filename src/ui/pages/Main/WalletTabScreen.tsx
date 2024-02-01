@@ -48,7 +48,7 @@ export default function WalletTabScreen() {
 
   const accountBalance = useAccountBalance();
   const networkType = useNetworkType();
-  console.log(networkType)
+  console.log(networkType);
   const isTestNetwork = networkType === NetworkType.TESTNET;
 
   const currentKeyring = useCurrentKeyring();
@@ -194,7 +194,7 @@ export default function WalletTabScreen() {
               preset="default"
               icon="send"
               onClick={(e) => {
-                navigate('TxBisonCreateScreen');
+                navigate('TxCreateScreen');
               }}
               full
             />
@@ -267,12 +267,8 @@ export default function WalletTabScreen() {
 
 function BisonTab() {
   const addressSummary = useAddressSummary();
-  console.log(addressSummary)
-  return (
-    <Column>
-      {BisonList()}
-    </Column>
-  );
+  console.log(addressSummary);
+  return <Column>{BisonList()}</Column>;
 }
 
 function AtomicalsTab() {
@@ -595,7 +591,6 @@ function BitcoinBalance() {
       //   navigate('BRC20TokenScreen', { tokenBalance: data, ticker: data.ticker });
       // }}
     />
-
   );
 }
 
@@ -634,11 +629,7 @@ function BisonBalanceList() {
     balance: Number(total)
   };
 
-  return (
-    <BisonBalanceCard
-      bisonBalance={bisonBalanceData}
-    />
-  );
+  return <BisonBalanceCard bisonBalance={bisonBalanceData} />;
 }
 
 function AtomicalList() {

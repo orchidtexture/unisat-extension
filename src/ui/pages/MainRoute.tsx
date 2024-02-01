@@ -51,6 +51,7 @@ import ReceiveScreen from './Wallet/ReceiveScreen';
 import TxBisonConfirmScreen from './Wallet/TxBisonConfirmScreen';
 import TxBisonCreateScreen from './Wallet/TxBisonCreateScreen';
 import TxBisonSuccessScreen from './Wallet/TxBisonSuccessScreen';
+import TxBitcoinCreateScreen from './Wallet/TxBitcoinCreateScreen';
 import TxConfirmScreen from './Wallet/TxConfirmScreen';
 import TxCreateScreen from './Wallet/TxCreateScreen';
 import TxFailScreen from './Wallet/TxFailScreen';
@@ -110,6 +111,10 @@ const routes = {
   TxCreateScreen: {
     path: '/wallet/tx/create',
     element: <TxCreateScreen />
+  },
+  TxBitcoinCreateScreen: {
+    path: '/wallet/tx/bitcoin/create',
+    element: <TxBitcoinCreateScreen />
   },
   TxBisonCreateScreen: {
     path: '/wallet/tx/bison/create',
