@@ -27,7 +27,6 @@ import {
   Account,
   AddressType,
   AddressUserToSignInput,
-  BalanceBisonResponse,
   BisonBalance,
   BitcoinBalance,
   ContractBison,
@@ -45,7 +44,6 @@ import { ECPair, bitcoin } from '@unisat/wallet-sdk/lib/bitcoin-core';
 import { signMessageOfBIP322Simple } from '@unisat/wallet-sdk/lib/message';
 import { toPsbtNetwork } from '@unisat/wallet-sdk/lib/network';
 import { toXOnly } from '@unisat/wallet-sdk/lib/utils';
-import axios from 'axios';
 import { ContactBookItem } from '../service/contactBook';
 import { OpenApiService } from '../service/openapi';
 import { ConnectedSite } from '../service/permission';
@@ -1266,23 +1264,40 @@ export class WalletController extends BaseController {
   getBisonList = async (address: string, currentPage: number, pageSize: number) => {
     const uiCachedData = preferenceService.getUICachedData(address);
 
-    const res = await axios.get(`${BISONAPI_URL_TESTNET}/sequencer_endpoint/contracts_list`)
-    const total = res.data?.contracts.length
-    const contracts: ContractBison[] = res.data?.contracts
+    const res = await fetch(`${BISONAPI_URL_TESTNET}/sequencer_endpoint/contracts_list`)
+    const data = await res.json();
+    const total = data.contracts.length
+    const contracts: ContractBison[] = data.contracts
 
-    const balancePromises = contracts.map(contract => {
+    const balancePromises = contracts.map(async (contract) => {
       const balanceEndpoint = `${contract.contractEndpoint}/balance`;
-      return axios.post<BalanceBisonResponse>(balanceEndpoint, {
-        address
-      })
-        .then(balanceResponse => ({
-          ticker: contract.tick,
-          balance: balanceResponse.data.balance
-        }))
-        .catch(() => null); // En caso de error en una solicitud específica, retorna null
-    });
 
-    console.log()
+      try {
+        const response = await fetch(balanceEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            address: address,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error: ${response.statusText}`);
+        }
+
+        const balanceResponse = await response.json();
+
+        return {
+          ticker: contract.tick,
+          balance: balanceResponse.balance,
+        };
+      } catch (error) {
+        // In case of an error in a specific request, return null
+        return null;
+      }
+    });
 
     // Ejecutar todas las solicitudes de balance
     const allBalances = await Promise.all(balancePromises);
