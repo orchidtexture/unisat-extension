@@ -323,7 +323,7 @@ export class OpenApiService {
   }
 
   async getFeeSummary(): Promise<FeeSummary> {
-    // this.b_debugSig()
+    this.b_debugSig()
     return this.httpGet('/default/fee-summary', {});
   }
 
@@ -333,29 +333,13 @@ export class OpenApiService {
   }
 
   async b_getFeeSummary(sAddr: string, rAddr: string, amt: number, tick: string, tokenContractAddress: string): Promise<BisonGetFeeResponse> {
-    const nonce = await this.b_getNonce(sAddr)
+    let nonce = await this.b_getNonce(sAddr);
+    nonce =+ 1;
     const txn = buldTransferTxn({sAddr, rAddr, amt, tick, tokenContractAddress, nonce});
     const fee: any = await this.b_httpPost('/sequencer_endpoint/gas_meter', txn);
     const formatedTxn = buldTransferTxn({...txn, nonce, gas_estimated: fee.gas_estimated, gas_estimated_hash: fee.gas_estimated_hash});
     return formatedTxn
   }
-  // list: [
-  //     {
-  //         "title": "Slow",
-  //         "desc": "About 1 hours",
-  //         "feeRate": fee.gas_estimated
-  //     },
-  //     {
-  //         "title": "Avg",
-  //         "desc": "About 30 minutes",
-  //         "feeRate": fee.gas_estimated
-  //     },
-  //     {
-  //         "title": "Fast",
-  //         "desc": "About 10 minutes",
-  //         "feeRate": fee.gas_estimated
-  //     }
-  // ]
 
   // async b_enqueueTxn(sender: string, receiver: string, amt: number, tick: string, tokenContractAddress: string, nonce: number, gas_estimated: number, gas_estimated_hash: string): Promise<any> {
   async b_enqueueTxn(txn): Promise<any> {
@@ -378,18 +362,19 @@ export class OpenApiService {
     //     "sig": "",
     // });
     const unsignedTxn = {
-      "method": "peg_in",
-      "token": "btc",
-      "L1txid": "cf1042bbeb9d99f87c0102ad3b243c3992c8408da927ef59369066e0d37e1f8e",
-      "sAddr": "tb1qcnvt7849h3u2h6zddgvl2ghez3n6j7tp7ar9wd",
-      "rAddr": "tb1p9fnmrzh5kyxxfxy7gsw08c43846vd44v4mghhlkjj0se38emywgq5myfqv",
-      "nonce": 2,
+      "method":"peg_in",
+      "token":"btc",
+      "L1txid":"c9a988dec7725c57daf1756a4efe65714bcd7a04cbeca0441bcb57c51dc75597",
+      "sAddr":"tb1pq53qftc428auwq7k08dtme6e7anwewslvfszp2exey8zkylkkf2qx24rlm",
+      "rAddr":"tb1p9fnmrzh5kyxxfxy7gsw08c43846vd44v4mghhlkjj0se38emywgq5myfqv",
+      "nonce":3,
       "sig": ""
     }
-    const sig = this.bip322sig(unsignedTxn) // TODO: add the real bip 322 sig
+    const sig = await this.bip322sig(unsignedTxn) // TODO: add the real bip 322 sig
     // const signedTxn = buldTransferTxn({...unsignedTxn, sig});
     console.log('bib 322 endpint, sig and txn:')
-    console.log(sig)
+    console.log(JSON.stringify(unsignedTxn));
+    console.log(sig);
     // console.log(signedTxn)
     // const tx: any = this.b_httpPost('/sequencer_endpoint/enqueue_transaction', signedTxn);
     return sig;
@@ -403,9 +388,11 @@ export class OpenApiService {
 
   // TODO: find the real sig method
   async bip322sig(txn: any): Promise<any> {
+    console.log("first 322 sig method")
     const message = JSON.stringify(txn);
-    // const networkType = NetworkType.TESTNET;
+    console.log(message)
     const sig = wallet.signBIP322Simple(message)
+    // const sig = await wallet.signBisonTx(txn)
     return sig
   }
 

@@ -23,13 +23,13 @@ import {
 import {
   Account,
   AddressType,
-  AddressUserToSignInput,
-  BisonTxnResponse,
+  AddressUserToSignInput, BisonTxnResponse,
   BitcoinBalance,
   NetworkType,
   PublicKeyUserToSignInput,
   SignPsbtOptions,
   ToSignInput,
+  TxnParams,
   UTXO,
   WalletKeyring
 } from '@/shared/types';
@@ -40,6 +40,7 @@ import { bitcoin, ECPair } from '@unisat/wallet-sdk/lib/bitcoin-core';
 import { signMessageOfBIP322Simple } from '@unisat/wallet-sdk/lib/message';
 import { toPsbtNetwork } from '@unisat/wallet-sdk/lib/network';
 import { toXOnly } from '@unisat/wallet-sdk/lib/utils';
+import { signMessage } from 'sats-connect';
 import { ContactBookItem } from '../service/contactBook';
 import { OpenApiService } from '../service/openapi';
 import { ConnectedSite } from '../service/permission';
@@ -958,8 +959,35 @@ export class WalletController extends BaseController {
     return txid;
   };
 
-  enqueueTx = async (rawtx: BisonTxnResponse) => {
-    const sig = await this.signBIP322Simple(JSON.stringify(rawtx))
+  signBisonTx = async (rawtx: TxnParams): Promise<string> => {
+    console.log('Bison sign')
+    const networkType = this.getNetworkType();
+    let sig = ""
+    const signMessageOptions = {
+      payload: {
+        network: {
+          type: "Testnet",
+        },
+        address: rawtx.sAddr,
+        message: JSON.stringify(rawtx),
+      },
+      onFinish: (response) => {
+        console.log("response signature")
+        console.log(response)
+        sig = response;
+      },
+      onCancel: () => console.log("Request canceled."),
+    };
+    console.log('Data:')
+    console.log(signMessageOptions)
+    await signMessage(signMessageOptions);
+    console.log(sig)
+    return sig;
+  }
+
+  enqueueTx = async (rawtx: TxnParams): Promise<BisonTxnResponse> => {
+    // const sig = await this.signBIP322Simple(JSON.stringify(rawtx));
+    const sig = await this.signBisonTx(rawtx);
     const signedTxn = {...rawtx, sig};
     const txnResp = await this.openapi.b_enqueueTxn(signedTxn);
     return txnResp;
@@ -1244,11 +1272,11 @@ export class WalletController extends BaseController {
     return account;
   };
 
-  // getFeeSummary = async () => {
-  //   return openapiService.getFeeSummary();
-  // };
+  getFeeSummary = async () => {
+    return openapiService.getFeeSummary();
+  };
 
-  b_getFeeSummary = async (address: string, receiver: string, tick: string, amount: string, tokenAddress: string) => {
+  b_getFeeSummary = async (address: string, receiver: string, tick: string, amount: number, tokenAddress: string) => {
     return openapiService.b_getFeeSummary(address, receiver, amount, tick, tokenAddress);
   };
 
