@@ -1,14 +1,16 @@
+import wallet from '@/background/controller/wallet';
 import { BISONAPI_URL_TESTNET } from '@/shared/constant';
 import { BisonBalance, ContractBison, ContractsBisonResponse, Inscription } from '@/shared/types';
 import { Button, Column, Content, Input, Row, Text } from '@/ui/components';
 import { useTools } from '@/ui/components/ActionComponent';
 import { useNavigate } from '@/ui/pages/MainRoute';
+import { useCurrentAccount } from '@/ui/state/accounts/hooks';
 import { useBitcoinTx, useFetchUtxosCallback } from '@/ui/state/transactions/hooks';
 import { colors } from '@/ui/theme/colors';
 import { satoshisToAmount } from '@/ui/utils';
 import { Select } from 'antd';
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const getBisonContracts = async (): Promise<ContractsBisonResponse> => {
   const res = await axios.get(`${BISONAPI_URL_TESTNET}/sequencer_endpoint/contracts_list`);
@@ -20,6 +22,7 @@ export default function TxBisonCreateScreen() {
   const [contracts, setContracts] = useState<ContractBison[]>([]);
   const [selectedContract, setSelectedContract] = useState<string>('');
   const [balance, setBalance] = useState<BisonBalance | null>(null);
+  const currentAccount = useCurrentAccount();
 
   useEffect(() => {
     getBisonContracts().then((response) => {
@@ -29,41 +32,21 @@ export default function TxBisonCreateScreen() {
 
   useEffect(() => {
     if (selectedContract) {
-      fetchBalance();
+      const contract = contracts.find(c => c.contractName === selectedContract);
+      if (!contract) return;
+      wallet.getBisonContractBalance(currentAccount.address, contract)
+        .then(setBalance)
+        .catch(error => {
+          console.error('Error:', error);
+          setBalance(null);
+        })
     } else {
       setBalance(null);
     }
   }, [selectedContract]);
 
-  const handleContractChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedContract(e.target.value);
-  };
-
-  const fetchBalance = async () => {
-    try {
-      // const currentAccount = useCurrentAccount();
-
-      // const contract = contracts.find(c => c.contractAddr === selectedContract);
-      // if (!contract) return;
-
-      // const balanceEndpoint = `${contract.contractEndpoint}/balance`;
-      // const balanceResponse = await axios.post<BalanceBisonResponse>(balanceEndpoint, {
-      //   address: currentAccount.address
-      // });
-
-      // const result: BisonBalance = {
-      //   ticker: contract.tick,
-      //   balance: balanceResponse.data.balance
-      // };
-
-      setBalance({
-        ticker: 'bBTC',
-        balance: 0.002
-      });
-    } catch (error) {
-      console.error('Error:', error);
-      setBalance(null);
-    }
+  const handleContractChange = (contractAddress: string) => {
+    setSelectedContract(contractAddress);
   };
 
   const navigate = useNavigate();
@@ -98,6 +81,7 @@ export default function TxBisonCreateScreen() {
   return (
     <Content style={{ padding: '0px 16px 24px' }}>
       <Row>
+        <Text text="Bison contract" preset="regular" color="textDim" />
         <Select
           style={{
             width: 200,
@@ -105,9 +89,10 @@ export default function TxBisonCreateScreen() {
             borderRadius: '5%'}}
           placeholder='Select a contract'
           onChange={handleContractChange}
-          options={contracts.map(contract => ({
-            value: contract.contractAddr,
-            label: <span>{contract.contractName}</span>
+          options={contracts.map((contract, index) => ({
+            key: contract.contractName + index,
+            value: contract.contractName,
+            label: contract.contractName
           }))}
         />
       </Row>

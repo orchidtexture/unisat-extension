@@ -1305,8 +1305,6 @@ export class WalletController extends BaseController {
 
     // Filtrar los balances que sean mayores que 0 y no sean null
     const list = allBalances.filter(balance => balance && balance.balance > 0) as BisonBalance[];
-    console.log(list);
-
     uiCachedData.bisonList[currentPage] = {
       currentPage,
       pageSize,
@@ -1320,6 +1318,36 @@ export class WalletController extends BaseController {
       list
     };
   };
+
+  getBisonContractBalance = async (address: string, contract: ContractBison): Promise<BisonBalance> => {
+    try {
+      const balanceEndpoint = `${contract.contractEndpoint}/balance`;
+      const response = await fetch(balanceEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          address: address,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+
+      const balanceResponse = await response.json();
+      return {
+        ticker: contract.tick,
+        balance: balanceResponse.balance as number,
+      };
+    } catch (error) {
+      return {
+        ticker: toUpper(contract.tick),
+        balance: 0,
+      }
+    }
+  }
 
   getAllInscriptionList = async (address: string, currentPage: number, pageSize: number) => {
     const cursor = (currentPage - 1) * pageSize;
