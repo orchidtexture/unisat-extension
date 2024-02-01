@@ -44,6 +44,7 @@ import { ECPair, bitcoin } from '@unisat/wallet-sdk/lib/bitcoin-core';
 import { signMessageOfBIP322Simple } from '@unisat/wallet-sdk/lib/message';
 import { toPsbtNetwork } from '@unisat/wallet-sdk/lib/network';
 import { toXOnly } from '@unisat/wallet-sdk/lib/utils';
+import { toUpper } from 'lodash';
 import { ContactBookItem } from '../service/contactBook';
 import { OpenApiService } from '../service/openapi';
 import { ConnectedSite } from '../service/permission';
@@ -1290,7 +1291,7 @@ export class WalletController extends BaseController {
         const balanceResponse = await response.json();
 
         return {
-          ticker: contract.tick,
+          ticker: toUpper(contract.tick),
           balance: balanceResponse.balance,
         };
       } catch (error) {
@@ -1304,6 +1305,7 @@ export class WalletController extends BaseController {
 
     // Filtrar los balances que sean mayores que 0 y no sean null
     const list = allBalances.filter(balance => balance && balance.balance > 0) as BisonBalance[];
+    console.log(list);
 
     uiCachedData.bisonList[currentPage] = {
       currentPage,
