@@ -12,8 +12,6 @@ import { useBitcoinTx, useFetchUtxosCallback } from '@/ui/state/transactions/hoo
 import { useAssetTabKey } from '@/ui/state/ui/hooks';
 import { AssetTabKey, uiActions } from '@/ui/state/ui/reducer';
 import { satoshisToAmount } from '@/ui/utils';
-
-import './Styles.css';
 import TxBisonCreateScreen from './TxBisonCreateScreen';
 import TxBitcoinCreateScreen from './TxBitcoinCreateScreen';
 

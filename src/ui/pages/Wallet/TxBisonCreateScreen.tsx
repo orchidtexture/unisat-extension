@@ -1,18 +1,14 @@
-import axios from 'axios';
-import React, { useEffect, useState } from 'react';
-
 import { BISONAPI_URL_TESTNET } from '@/shared/constant';
 import { BisonBalance, ContractBison, ContractsBisonResponse, Inscription } from '@/shared/types';
 import { Button, Column, Content, Input, Row, Text } from '@/ui/components';
 import { useTools } from '@/ui/components/ActionComponent';
 import { useNavigate } from '@/ui/pages/MainRoute';
-import { useAppDispatch } from '@/ui/state/hooks';
 import { useBitcoinTx, useFetchUtxosCallback } from '@/ui/state/transactions/hooks';
-import { useAssetTabKey } from '@/ui/state/ui/hooks';
 import { colors } from '@/ui/theme/colors';
 import { satoshisToAmount } from '@/ui/utils';
-
-import './Styles.css';
+import { Select } from 'antd';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 
 const getBisonContracts = async (): Promise<ContractsBisonResponse> => {
   const res = await axios.get(`${BISONAPI_URL_TESTNET}/sequencer_endpoint/contracts_list`);
@@ -24,8 +20,6 @@ export default function TxBisonCreateScreen() {
   const [contracts, setContracts] = useState<ContractBison[]>([]);
   const [selectedContract, setSelectedContract] = useState<string>('');
   const [balance, setBalance] = useState<BisonBalance | null>(null);
-  const dispatch = useAppDispatch();
-  const assetTabKey = useAssetTabKey();
 
   useEffect(() => {
     getBisonContracts().then((response) => {
@@ -103,16 +97,19 @@ export default function TxBisonCreateScreen() {
 
   return (
     <Content style={{ padding: '0px 16px 24px' }}>
-      <Row justifyCenter>
-        <Text text="Select token" preset="regular" color="textDim" />
-        <select id="contract-select" className="select" value={selectedContract} onChange={handleContractChange}>
-          <option value="">Select a contract...</option>
-          {contracts.map((contract) => (
-            <option key={contract.contractAddr} value={contract.contractAddr}>
-              {contract.contractName}
-            </option>
-          ))}
-        </select>
+      <Row>
+        <Select
+          style={{
+            width: 200,
+            border: '2px solid #142918',
+            borderRadius: '5%'}}
+          placeholder='Select a contract'
+          onChange={handleContractChange}
+          options={contracts.map(contract => ({
+            value: contract.contractAddr,
+            label: <span>{contract.contractName}</span>
+          }))}
+        />
       </Row>
 
       <Column mt="lg">
