@@ -5,13 +5,14 @@ import { updateVersion } from '../global/actions';
 export interface UIState {
   assetTabKey: AssetTabKey;
   bisonAssetTabKey: BisonAssetTabKey;
+  ordinalsAssetTabKey: OrdinalsAssetTabKey;
   atomicalsAssetTabKey: AtomicalsAssetTabKey;
 }
 
 export enum AssetTabKey {
   BISON,
-  BITCOIN
-  // ORDINALS,
+  BITCOIN,
+  ORDINALS
   // ATOMICALS
 }
 
@@ -19,10 +20,10 @@ export enum BisonAssetTabKey {
   ALL,
 }
 
-// export enum OrdinalsAssetTabKey {
-//   ALL,
-//   BRC20
-// }
+export enum OrdinalsAssetTabKey {
+  ALL,
+  BRC20
+}
 
 export enum AtomicalsAssetTabKey {
   ALL,
@@ -33,6 +34,7 @@ export enum AtomicalsAssetTabKey {
 export const initialState: UIState = {
   assetTabKey: AssetTabKey.BISON,
   bisonAssetTabKey: BisonAssetTabKey.ALL,
+  ordinalsAssetTabKey: OrdinalsAssetTabKey.BRC20,
   atomicalsAssetTabKey: AtomicalsAssetTabKey.ARC20
 };
 
@@ -50,6 +52,7 @@ const slice = createSlice({
           assetTabKey?: AssetTabKey;
           bisonAssetTabKey?: BisonAssetTabKey;
           atomicalsAssetTabKey?: AtomicalsAssetTabKey;
+          ordinalsAssetTabKey?: OrdinalsAssetTabKey;
         };
       }
     ) {
@@ -59,6 +62,9 @@ const slice = createSlice({
       }
       if (payload.bisonAssetTabKey !== undefined) {
         state.bisonAssetTabKey = payload.bisonAssetTabKey;
+      }
+      if (payload.ordinalsAssetTabKey !== undefined) {
+        state.ordinalsAssetTabKey = payload.ordinalsAssetTabKey;
       }
       if (payload.atomicalsAssetTabKey !== undefined) {
         state.atomicalsAssetTabKey = payload.atomicalsAssetTabKey;
@@ -74,6 +80,9 @@ const slice = createSlice({
       }
       if (!state.bisonAssetTabKey) {
         state.bisonAssetTabKey = BisonAssetTabKey.ALL;
+      }
+      if (!state.ordinalsAssetTabKey) {
+        state.ordinalsAssetTabKey = OrdinalsAssetTabKey.BRC20;
       }
       if (!state.atomicalsAssetTabKey) {
         state.atomicalsAssetTabKey = AtomicalsAssetTabKey.ARC20;

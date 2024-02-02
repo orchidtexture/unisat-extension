@@ -30,8 +30,8 @@ import {
   useVersionInfo,
   useWalletConfig
 } from '@/ui/state/settings/hooks';
-import { useAssetTabKey, useAtomicalsAssetTabKey } from '@/ui/state/ui/hooks';
-import { AssetTabKey, AtomicalsAssetTabKey, uiActions } from '@/ui/state/ui/reducer';
+import { useAssetTabKey, useAtomicalsAssetTabKey, useOrdinalsAssetTabKey } from '@/ui/state/ui/hooks';
+import { AssetTabKey, AtomicalsAssetTabKey, OrdinalsAssetTabKey, uiActions } from '@/ui/state/ui/reducer';
 import { fontSizes } from '@/ui/theme/font';
 import { useWallet } from '@/ui/utils';
 import { LoadingOutlined } from '@ant-design/icons';
@@ -96,9 +96,9 @@ export default function WalletTabScreen() {
       children: <BisonTab />
     },
     {
-      key: AssetTabKey.BITCOIN,
-      label: 'Bitcoin L1',
-      children: <BRC20List />
+      key: AssetTabKey.ORDINALS,
+      label: 'Ordinals L1',
+      children: <OrdinalsTab />
     }
   ];
 
@@ -250,20 +250,41 @@ export default function WalletTabScreen() {
   );
 }
 
-// function OrdinalsTab() {
-//   const addressSummary = useAddressSummary();
-//   const tabItems = [
-//     {
-//       key: OrdinalsAssetTabKey.ALL,
-//       label: `ALL (${addressSummary.inscriptionCount})`,
-//       children: <InscriptionList />
-//     },
-//     {
-//       key: OrdinalsAssetTabKey.BRC20,
-//       label: `BRC-20 (${addressSummary.brc20Count})`,
-//       children: <BRC20List />
-//     }
-//   ];
+function OrdinalsTab() {
+  const addressSummary = useAddressSummary();
+  const tabItems = [
+    {
+      key: OrdinalsAssetTabKey.ALL,
+      label: `ALL (${addressSummary.inscriptionCount})`,
+      children: <InscriptionList />
+    },
+    {
+      key: OrdinalsAssetTabKey.BRC20,
+      label: `BRC-20 (${addressSummary.brc20Count})`,
+      children: <BRC20List />
+    }
+  ];
+
+  const tabKey = useOrdinalsAssetTabKey();
+  const dispatch = useAppDispatch();
+  return (
+    <Column>
+      <Row justifyBetween>
+        <TabBar
+          defaultActiveKey={tabKey}
+          activeKey={tabKey}
+          items={tabItems}
+          preset="style2"
+          onTabClick={(key) => {
+            dispatch(uiActions.updateAssetTabScreen({ ordinalsAssetTabKey: key }));
+          }}
+        />
+      </Row>
+
+      {tabItems[tabKey].children}
+    </Column>
+  );
+}
 
 function BisonTab() {
   const addressSummary = useAddressSummary();
