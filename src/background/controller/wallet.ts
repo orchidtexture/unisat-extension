@@ -40,7 +40,6 @@ import { bitcoin, ECPair } from '@unisat/wallet-sdk/lib/bitcoin-core';
 import { signMessageOfBIP322Simple } from '@unisat/wallet-sdk/lib/message';
 import { toPsbtNetwork } from '@unisat/wallet-sdk/lib/network';
 import { toXOnly } from '@unisat/wallet-sdk/lib/utils';
-import { signMessage } from 'sats-connect';
 import { ContactBookItem } from '../service/contactBook';
 import { OpenApiService } from '../service/openapi';
 import { ConnectedSite } from '../service/permission';
@@ -483,9 +482,6 @@ export class WalletController extends BaseController {
       }
     });
     psbt = await keyringService.signTransaction(_keyring, psbt, toSignInputs);
-    console.log('psbt')
-    console.log(psbt)
-    console.log(_keyring, psbt, toSignInputs)
     if (autoFinalized) {
       toSignInputs.forEach((v) => {
         // psbt.validateSignaturesOfInput(v.index, validator);
@@ -496,21 +492,15 @@ export class WalletController extends BaseController {
   };
 
   signMessage = async (text: string) => {
-    console.log("sign")
-    console.log(text)
     const account = preferenceService.getCurrentAccount();
     if (!account) throw new Error('no current account');
     const sig = keyringService.signMessage(account.pubkey, text);
-    console.log(sig)
     return sig
   };
 
   signBIP322Simple = async (text: string) => {
-    console.log("sign322")
-    console.log(text)
     const account = preferenceService.getCurrentAccount();
     if (!account) throw new Error('no current account');
-    console.log(account.address,)
     const networkType = this.getNetworkType();
     const sig = signMessageOfBIP322Simple({
       message: text,
@@ -518,7 +508,6 @@ export class WalletController extends BaseController {
       networkType,
       wallet: this as any
     });
-    console.log(sig)
     return sig
   };
 
@@ -718,7 +707,6 @@ export class WalletController extends BaseController {
     enableRBF: boolean;
     btcUtxos?: UnspentOutput[];
   }) => {
-    console.log('sendBTC')
     const account = preferenceService.getCurrentAccount();
     if (!account) throw new Error('no current account');
 
@@ -727,9 +715,6 @@ export class WalletController extends BaseController {
     if (!btcUtxos) {
       btcUtxos = await this.getBTCUtxos();
     }
-
-    console.log('utxos')
-    console.log(btcUtxos)
 
     if (btcUtxos.length == 0) {
       throw new Error('Insufficient balance.');
@@ -743,9 +728,6 @@ export class WalletController extends BaseController {
       feeRate,
       enableRBF
     });
-
-    console.log("psbt, toSignInputs")
-    console.log(psbt, toSignInputs)
 
     this.setPsbtSignNonSegwitEnable(psbt, true);
     await this.signPsbt(psbt, toSignInputs, true);
@@ -959,35 +941,35 @@ export class WalletController extends BaseController {
     return txid;
   };
 
-  signBisonTx = async (rawtx: TxnParams): Promise<string> => {
-    console.log('Bison sign')
-    const networkType = this.getNetworkType();
-    let sig = ""
-    const signMessageOptions = {
-      payload: {
-        network: {
-          type: "Testnet",
-        },
-        address: rawtx.sAddr,
-        message: JSON.stringify(rawtx),
-      },
-      onFinish: (response) => {
-        console.log("response signature")
-        console.log(response)
-        sig = response;
-      },
-      onCancel: () => console.log("Request canceled."),
-    };
-    console.log('Data:')
-    console.log(signMessageOptions)
-    await signMessage(signMessageOptions);
-    console.log(sig)
-    return sig;
-  }
+  // signBisonTx = async (rawtx: TxnParams): Promise<string> => {
+  //   console.log('Bison sign')
+  //   const networkType = this.getNetworkType();
+  //   let sig = ""
+  //   const signMessageOptions = {
+  //     payload: {
+  //       network: {
+  //         type: "Testnet",
+  //       },
+  //       address: rawtx.sAddr,
+  //       message: JSON.stringify(rawtx),
+  //     },
+  //     onFinish: (response) => {
+  //       console.log("response signature")
+  //       console.log(response)
+  //       sig = response;
+  //     },
+  //     onCancel: () => console.log("Request canceled."),
+  //   };
+  //   console.log('Data:')
+  //   console.log(signMessageOptions)
+  //   await signMessage(signMessageOptions);
+  //   console.log(sig)
+  //   return sig;
+  // }
 
   enqueueTx = async (rawtx: TxnParams): Promise<BisonTxnResponse> => {
-    // const sig = await this.signBIP322Simple(JSON.stringify(rawtx));
-    const sig = await this.signBisonTx(rawtx);
+    const sig = await this.signBIP322Simple(JSON.stringify(rawtx));
+    // const sig = await this.signBisonTx(rawtx);
     const signedTxn = {...rawtx, sig};
     const txnResp = await this.openapi.b_enqueueTxn(signedTxn);
     return txnResp;
