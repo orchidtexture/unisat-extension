@@ -1362,6 +1362,48 @@ export class WalletController extends BaseController {
     };
   };
 
+  getBisonContractBalances = async (address: string) => {
+    const res = await fetch(`${BISONAPI_URL_TESTNET}/sequencer_endpoint/contracts_list`)
+    const data = await res.json();
+    const contracts: ContractBison[] = data.contracts
+
+    const balancePromises = contracts.map(async (contract) => {
+      const balanceEndpoint = `${contract.contractEndpoint}/balance`;
+
+      try {
+        const response = await fetch(balanceEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            address: address,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error: ${response.statusText}`);
+        }
+
+        const balanceResponse = await response.json();
+
+        return {
+          ticker: toUpper(contract.tick),
+          balance: balanceResponse.balance,
+        };
+      } catch (error) {
+        // In case of an error in a specific request, return null
+        return null;
+      }
+    });
+
+    const allBalances = await Promise.all(balancePromises);
+
+    const list = allBalances.filter(balance => balance && balance.balance > 0) as BisonBalance[];
+    return list
+  };
+
+
   getBisonContractBalance = async (address: string, contract: ContractBison): Promise<BisonBalance> => {
     try {
       const balanceEndpoint = `${contract.contractEndpoint}/balance`;

@@ -1,82 +1,115 @@
 import wallet from '@/background/controller/wallet';
-import { BISONAPI_URL_TESTNET } from '@/shared/constant';
-import { BisonBalance, ContractBison, ContractsBisonResponse, Inscription } from '@/shared/types';
+import { COIN_DUST } from '@/shared/constant';
+import { BisonBalance, Inscription } from '@/shared/types';
 import { Button, Column, Content, Input, Row, Text } from '@/ui/components';
 import { useTools } from '@/ui/components/ActionComponent';
 import { useNavigate } from '@/ui/pages/MainRoute';
 import { useCurrentAccount } from '@/ui/state/accounts/hooks';
 import { useBitcoinTx, useFetchUtxosCallback } from '@/ui/state/transactions/hooks';
 import { colors } from '@/ui/theme/colors';
-import { satoshisToAmount } from '@/ui/utils';
+import { amountToSatoshis, isValidAddress, satoshisToAmount } from '@/ui/utils';
 import { Select } from 'antd';
-import axios from 'axios';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-const getBisonContracts = async (): Promise<ContractsBisonResponse> => {
-  const res = await axios.get(`${BISONAPI_URL_TESTNET}/sequencer_endpoint/contracts_list`);
-  const contracts: ContractBison[] = res.data?.contracts;
-  return { contracts };
-};
 
 export default function TxBisonCreateScreen() {
-  const [contracts, setContracts] = useState<ContractBison[]>([]);
-  const [selectedContract, setSelectedContract] = useState<string>('');
-  const [balance, setBalance] = useState<BisonBalance | null>(null);
+  const [balances, setBalances] = useState<BisonBalance[]>([]);
+  const [selectedBalance, setSelectedBalance] = useState<BisonBalance | null>(null);
   const currentAccount = useCurrentAccount();
-
-  useEffect(() => {
-    getBisonContracts().then((response) => {
-      setContracts(response.contracts);
-    });
-  }, []);
-
-  useEffect(() => {
-    if (selectedContract) {
-      const contract = contracts.find(c => c.contractName === selectedContract);
-      if (!contract) return;
-      wallet.getBisonContractBalance(currentAccount.address, contract)
-        .then(setBalance)
-        .catch(error => {
-          console.error('Error:', error);
-          setBalance(null);
-        })
-    } else {
-      setBalance(null);
-    }
-  }, [selectedContract]);
-
-  const handleContractChange = (contractAddress: string) => {
-    setSelectedContract(contractAddress);
-  };
-
   const navigate = useNavigate();
+  const [error, setError] = useState('');
+  const [autoAdjust, setAutoAdjust] = useState(false);
+  const [disabled, setDisabled] = useState(false);
   const bitcoinTx = useBitcoinTx();
+
   const [inputAmount, setInputAmount] = useState(
     bitcoinTx.toSatoshis > 0 ? satoshisToAmount(bitcoinTx.toSatoshis) : ''
   );
-  const [disabled, setDisabled] = useState(false);
   const [toInfo, setToInfo] = useState<{
-    address: string;
-    domain: string;
-    inscription?: Inscription;
-  }>({
-    address: bitcoinTx.toAddress,
-    domain: bitcoinTx.toDomain,
-    inscription: undefined
-  });
+      address: string;
+      domain: string;
+      inscription?: Inscription;
+    }>({
+      address: bitcoinTx.toAddress,
+      domain: bitcoinTx.toDomain,
+      inscription: undefined
+    });
 
-  const [error, setError] = useState('');
-
-  const [autoAdjust, setAutoAdjust] = useState(false);
   const fetchUtxos = useFetchUtxosCallback();
-
   const tools = useTools();
+  const dustAmount = useMemo(() => satoshisToAmount(COIN_DUST), [COIN_DUST]);
+
+  useEffect(() => {
+    wallet.getBisonContractBalances(currentAccount.address)
+      .then(setBalances);
+  }, [currentAccount]);
+
+
   useEffect(() => {
     tools.showLoading(true);
     fetchUtxos().finally(() => {
       tools.showLoading(false);
     });
   }, []);
+
+  useEffect(() => {
+    setError('');
+    setDisabled(true);
+
+    if (!isValidAddress(toInfo.address)) {
+      return;
+    }
+    if (!toSatoshis) {
+      return;
+    }
+    if (toSatoshis < COIN_DUST) {
+      setError(`Amount must be at least ${dustAmount} BTC`);
+      return;
+    }
+
+    if (toSatoshis > (selectedBalance?.balance || 0)) {
+      setError('Amount exceeds your available balance');
+      return;
+    }
+
+    // if (feeRate <= 0) {
+    //   return;
+    // }
+
+    // delete when above if lines are fixed
+    setDisabled(false)
+    return;
+    // if (toInfo.address == bitcoinTx.toAddress && toSatoshis == bitcoinTx.toSatoshis && feeRate == bitcoinTx.feeRate) {
+    //   //Prevent repeated triggering caused by setAmount
+    //   setDisabled(false);
+    //   return;
+    // }
+
+    // prepareSendBTC({ toAddressInfo: toInfo, toAmount: toSatoshis, feeRate, enableRBF })
+    //   .then((data) => {
+    //   // if (data.fee < data.estimateFee) {
+    //     //   setError(`Network fee must be at leat ${data.estimateFee}`);
+    //     //   return;
+    //     // }
+    //     setRawTxInfo(data);
+    //     setDisabled(false);
+    //   })
+    //   .catch((e) => {
+    //     console.log(e);
+    //     setError(e.message);
+    //   });
+  }, [toInfo, inputAmount]);
+
+
+  const handleContractChange = (ticker: string) => {
+    const b = balances.find(b => b.ticker === ticker)
+    setSelectedBalance(b || null)
+  };
+
+  const toSatoshis = useMemo(() => {
+    if (!inputAmount) return 0;
+    return amountToSatoshis(inputAmount);
+  }, [inputAmount]);
 
   return (
     <Content style={{ padding: '0px 16px 24px' }}>
@@ -89,10 +122,10 @@ export default function TxBisonCreateScreen() {
             borderRadius: '5%'}}
           placeholder='Select a contract'
           onChange={handleContractChange}
-          options={contracts.map((contract, index) => ({
-            key: contract.contractName + index,
-            value: contract.contractName,
-            label: contract.contractName
+          options={balances.map((balance, index) => ({
+            key: balance.ticker + index,
+            value: balance.ticker,
+            label: balance.ticker
           }))}
         />
       </Row>
@@ -117,7 +150,7 @@ export default function TxBisonCreateScreen() {
               setAutoAdjust(true);
             }}>
             <Text text="MAX" preset="sub" style={{ color: autoAdjust ? colors.yellow_light : colors.white_muted }} />
-            <Text text={`${balance?.balance || 0} ${balance?.ticker || ''}`} preset="bold" size="sm" />
+            <Text text={`${satoshisToAmount(selectedBalance?.balance || 0)} ${selectedBalance?.ticker || ''}`} preset="bold" size="sm" />
           </Row>
         </Row>
         <Input
@@ -140,8 +173,7 @@ export default function TxBisonCreateScreen() {
         disabled={disabled}
         preset="primary"
         text="Next"
-        onClick={(e) => {
-          console.log('next button');
+        onClick={() => {
           navigate('TxBisonConfirmScreen', {});
         }}></Button>
     </Content>

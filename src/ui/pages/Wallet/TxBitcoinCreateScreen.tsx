@@ -1,6 +1,3 @@
-import BigNumber from 'bignumber.js';
-import { useEffect, useMemo, useState } from 'react';
-
 import { COIN_DUST } from '@/shared/constant';
 import { Inscription, RawTxInfo } from '@/shared/types';
 import { Button, Column, Content, Input, Row, Text } from '@/ui/components';
@@ -17,6 +14,8 @@ import {
 } from '@/ui/state/transactions/hooks';
 import { colors } from '@/ui/theme/colors';
 import { amountToSatoshis, isValidAddress, satoshisToAmount } from '@/ui/utils';
+import BigNumber from 'bignumber.js';
+import { useEffect, useMemo, useState } from 'react';
 
 export default function TxBitcoinCreateScreen() {
   const accountBalance = useAccountBalance();
