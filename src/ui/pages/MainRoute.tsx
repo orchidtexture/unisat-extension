@@ -28,6 +28,7 @@ import BRC20SendScreen from './BRC20/BRC20SendScreen';
 import BRC20TokenScreen from './BRC20/BRC20TokenScreen';
 import AppTabScrren from './Main/AppTabScreen';
 import BoostScreen from './Main/BoostScreen';
+import BridgeTabScreen from './Main/BridgeTabScreen';
 import DiscoverTabScreen from './Main/DiscoverTabScreen';
 import SettingsTabScreen from './Main/SettingsTabScreen';
 import WalletTabScreen from './Main/WalletTabScreen';
@@ -82,6 +83,10 @@ const routes = {
   SettingsTabScreen: {
     path: '/settings',
     element: <SettingsTabScreen />
+  },
+  BridgeTabScreen: {
+    path: '/bridge',
+    element: <BridgeTabScreen />
   },
   CreateHDWalletScreen: {
     path: '/account/create-hd-wallet',

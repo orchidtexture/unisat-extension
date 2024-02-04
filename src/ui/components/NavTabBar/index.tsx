@@ -13,7 +13,7 @@ export function NavTabBar({ tab }: { tab: TabOption }) {
     <Grid columns={4} style={{ width: '100%', height: '67.5px', backgroundColor: colors.bg2 }}>
       <TabButton tabName="home" icon="wallet" isActive={tab === 'home'} />
       <TabButton tabName="mint" icon="compass" isActive={tab === 'mint'} />
-      <TabButton tabName="app" icon="grid" isActive={tab === 'app'} />
+      <TabButton tabName="bridge" icon="send" isActive={tab === 'bridge'} />
       <TabButton tabName="settings" icon="settings" isActive={tab === 'settings'} />
     </Grid>
   );
@@ -37,6 +37,8 @@ function TabButton({ tabName, icon, isActive }: { tabName: TabOption; icon: Icon
           readTab('app');
         } else if (tabName === 'settings') {
           navigate('SettingsTabScreen');
+        } else if (tabName === 'bridge') {
+          navigate('BridgeTabScreen');
         }
       }}>
       <Icon icon={icon} color={isActive ? 'white' : 'white_muted'} />
