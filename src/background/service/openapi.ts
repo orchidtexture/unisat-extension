@@ -242,7 +242,12 @@ export class OpenApiService {
   };
 
   async getWalletConfig(): Promise<WalletConfig> {
-    return this.httpGet('/default/config', {});
+    // return this.httpGet('/default/config', {});
+    return {
+      version: '0.0.0',
+      moonPayEnabled: false,
+      statusMessage: ''
+    };
   }
 
   async getAddressSummary(address: string): Promise<AddressSummary> {
