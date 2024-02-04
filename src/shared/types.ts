@@ -241,6 +241,7 @@ export interface TokenBalance {
 export interface BisonBalance {
   ticker: string;
   balance: number;
+  contractAddress: string;
 }
 
 export interface Arc20Balance {

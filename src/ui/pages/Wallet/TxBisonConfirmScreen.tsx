@@ -1,12 +1,12 @@
-import { RawTxInfo } from '@/shared/types';
+import wallet from '@/background/controller/wallet';
+import { BisonGetFeeResponse } from '@/shared/types';
 import { Button, Card, Column, Content, Footer, Header, Layout, Row, Text } from '@/ui/components';
+import { CopyableAddress } from '@/ui/components/CopyableAddress';
+import { useCurrentAccount } from '@/ui/state/accounts/hooks';
+import { satoshisToAmount } from '@/ui/utils';
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import { useNavigate } from '../MainRoute';
-
-
-interface LocationState {
-  rawTxInfo: RawTxInfo;
-}
 
 export interface ToSignInput {
   index: number;
@@ -44,23 +44,16 @@ interface TxInfo {
   isScammer: boolean;
 }
 
-const initTxInfo: TxInfo = {
-  changedBalance: 0,
-  rawtx: '',
-  psbtHex: '',
-  toSignInputs: [],
-  txError: '',
-  isScammer: false,
-  decodedPsbt: {
-    inputInfos: [],
-    outputInfos: [],
-    fee: 0,
-    feeRate: 0,
-    risks: [],
-    features: {
-      rbf: false
-    },
-  }
+const initTxInfo: BisonGetFeeResponse = {
+  sAddr: '',
+  rAddr: '',
+  amt: 0,
+  tick: '',
+  nonce: 0,
+  tokenContractAddress: '',
+  sig: '',
+  gas_estimated: 0,
+  gas_estimated_hash: '',
 };
 
 
@@ -77,53 +70,53 @@ function Section({ title, children }: { title: string; children?: React.ReactNod
   );
 }
 
-
-function SignTxDetails({ txInfo,}: { txInfo: TxInfo }) {
-  const address = '1234565';
-  return (
-    <Column gap="lg">
-      <Text text="Sign Transaction" preset="title-bold" textCenter mt="lg" />
-      <Row justifyCenter>
-        <Card style={{ backgroundColor: '#272626', maxWidth: 320, width: 320 }}>
-          <Column gap="lg">
-            <Column>
-              <Column>
-                <Column justifyCenter>
-                  <Row itemsCenter>
-                    <Text
-                      text={0.001}
-                      color={'white'}
-                      preset="bold"
-                      textCenter
-                      size="xxl"
-                    />
-                    <Text text="bBTC" color="textDim" />
-                  </Row>
-                </Column>
-                <Text text="fee 0.00005980" color="textDim" />
-              </Column>
-            </Column>
-          </Column>
-        </Card>
-      </Row>
-    </Column>
-  );
-}
-
-const detailsComponent = <SignTxDetails txInfo={initTxInfo} />;
-
-
 export default function TxBisonConfirmScreen() {
   const navigate = useNavigate()
-  console.log('txBisonConfirmScreen')
+  const currentAccount = useCurrentAccount();
+  const { state } = useLocation();
+  const { rawTx } = state as {
+    rawTx: BisonGetFeeResponse;
+  };
+
+  const handleSign = () => {
+    console.log('handleSign')
+    wallet.enqueueTx(rawTx)
+      .then((r) => {
+        console.log(r);
+        navigate('TxBisonSuccessScreen')
+      })
+  }
+
   return (
     <Layout>
       <Header>
           Confirm transaction
       </Header>
+
       <Content>
         <Column gap="xl">
-          {detailsComponent}
+          <Card style={{ backgroundColor: '#272626', maxWidth: 320, width: 320 }}>
+            <Column gap="lg" justifyCenter>
+              <Row itemsCenter>
+                <Text
+                  text={satoshisToAmount(rawTx?.amt)}
+                  color={'white'}
+                  preset="bold"
+                  textCenter
+                  size="xxl"
+                />
+                <Text text="bBTC" color="textDim" />
+              </Row>
+              <Text text={`fee ${satoshisToAmount(rawTx?.gas_estimated)}`} color="textDim" />
+            </Column>
+          </Card>
+
+          <Section title="From:">
+            <CopyableAddress address={rawTx.sAddr} />
+          </Section>
+          <Section title="To:">
+            <CopyableAddress address={rawTx.rAddr} />
+          </Section>
         </Column>
       </Content>
 
@@ -133,9 +126,7 @@ export default function TxBisonConfirmScreen() {
           <Button
             preset="primary"
             text={'Sign'}
-            onClick={() => {
-              navigate('TxBisonSuccessScreen')
-            }}
+            onClick={handleSign}
             disabled={false}
             full
           />

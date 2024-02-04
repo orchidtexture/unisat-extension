@@ -1,6 +1,6 @@
 import wallet from '@/background/controller/wallet';
 import { COIN_DUST } from '@/shared/constant';
-import { BisonBalance, Inscription } from '@/shared/types';
+import { BisonBalance, BisonGetFeeResponse, Inscription } from '@/shared/types';
 import { Button, Column, Content, Input, Row, Text } from '@/ui/components';
 import { useTools } from '@/ui/components/ActionComponent';
 import { useNavigate } from '@/ui/pages/MainRoute';
@@ -20,6 +20,7 @@ export default function TxBisonCreateScreen() {
   const [error, setError] = useState('');
   const [autoAdjust, setAutoAdjust] = useState(false);
   const [disabled, setDisabled] = useState(false);
+  const [rawTx, setRawTx] = useState<BisonGetFeeResponse | null>(null)
   const bitcoinTx = useBitcoinTx();
 
   const [inputAmount, setInputAmount] = useState(
@@ -72,32 +73,16 @@ export default function TxBisonCreateScreen() {
       return;
     }
 
-    // if (feeRate <= 0) {
-    //   return;
-    // }
+    if (!selectedBalance?.ticker) return
 
-    // delete when above if lines are fixed
-    setDisabled(false)
-    return;
-    // if (toInfo.address == bitcoinTx.toAddress && toSatoshis == bitcoinTx.toSatoshis && feeRate == bitcoinTx.feeRate) {
-    //   //Prevent repeated triggering caused by setAmount
-    //   setDisabled(false);
-    //   return;
-    // }
-
-    // prepareSendBTC({ toAddressInfo: toInfo, toAmount: toSatoshis, feeRate, enableRBF })
-    //   .then((data) => {
-    //   // if (data.fee < data.estimateFee) {
-    //     //   setError(`Network fee must be at leat ${data.estimateFee}`);
-    //     //   return;
-    //     // }
-    //     setRawTxInfo(data);
-    //     setDisabled(false);
-    //   })
-    //   .catch((e) => {
-    //     console.log(e);
-    //     setError(e.message);
-    //   });
+    wallet.b_getFeeSummary(
+      currentAccount.address,
+      toInfo.address,
+      selectedBalance?.ticker,
+      amountToSatoshis(inputAmount),
+      selectedBalance?.contractAddress
+    ).then(setRawTx)
+      .then(() => setDisabled(false))
   }, [toInfo, inputAmount]);
 
 
@@ -174,7 +159,7 @@ export default function TxBisonCreateScreen() {
         preset="primary"
         text="Next"
         onClick={() => {
-          navigate('TxBisonConfirmScreen', {});
+          navigate('TxBisonConfirmScreen', { rawTx });
         }}></Button>
     </Content>
   );

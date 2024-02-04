@@ -48,10 +48,9 @@ import { toPsbtNetwork } from '@unisat/wallet-sdk/lib/network';
 import { toXOnly } from '@unisat/wallet-sdk/lib/utils';
 import { toUpper } from 'lodash';
 import { ContactBookItem } from '../service/contactBook';
-import { buldPegInTxn, OpenApiService } from '../service/openapi';
+import { OpenApiService, buldPegInTxn } from '../service/openapi';
 import { ConnectedSite } from '../service/permission';
 import BaseController from './base';
-
 
 const stashKeyrings: Record<string, Keyring> = {};
 export type AccountAsset = {
@@ -506,6 +505,8 @@ export class WalletController extends BaseController {
   };
 
   signBIP322Simple = async (text: string) => {
+    console.log('firmando 322')
+    console.log(text)
     const account = preferenceService.getCurrentAccount();
     if (!account) throw new Error('no current account');
     const networkType = this.getNetworkType();
@@ -979,7 +980,7 @@ export class WalletController extends BaseController {
     const BISON_DEFAULT_TOKEN = 'btc';
     const BISON_ADDRESS_VAULT_BTC = 'tb1p9fnmrzh5kyxxfxy7gsw08c43846vd44v4mghhlkjj0se38emywgq5myfqv';
     const psbtHex: any = await this.sendBTC({to, amount, feeRate, enableRBF});
-    
+
     const psbt = bitcoin.Psbt.fromHex(psbtHex);
     const rawtxData = psbt.extractTransaction().toHex();
     const fee = psbt.getFee();
@@ -1007,7 +1008,7 @@ export class WalletController extends BaseController {
     return {}
   }
 
-  enqueueTx = async (rawtx: TxnParams): Promise<BisonTxnResponse> => {
+  enqueueTx = async (rawtx: TxnParams,): Promise<BisonTxnResponse> => {
     const sig = await this.signBIP322Simple(JSON.stringify(rawtx));
     const signedTxn = {...rawtx, sig};
     const txnResp = await this.openapi.b_enqueueTxn(signedTxn);
@@ -1457,11 +1458,13 @@ export class WalletController extends BaseController {
       return {
         ticker: contract.tick,
         balance: balanceResponse.balance as number,
+        contractAddress: contract.contractAddr
       };
     } catch (error) {
       return {
         ticker: toUpper(contract.tick),
         balance: 0,
+        contractAddress: ''
       }
     }
   }
