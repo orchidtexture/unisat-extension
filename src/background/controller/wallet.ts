@@ -48,7 +48,7 @@ import { toPsbtNetwork } from '@unisat/wallet-sdk/lib/network';
 import { toXOnly } from '@unisat/wallet-sdk/lib/utils';
 import { toUpper } from 'lodash';
 import { ContactBookItem } from '../service/contactBook';
-import { OpenApiService } from '../service/openapi';
+import { buldPegInTxn, OpenApiService } from '../service/openapi';
 import { ConnectedSite } from '../service/permission';
 import BaseController from './base';
 
@@ -974,9 +974,41 @@ export class WalletController extends BaseController {
   //   return sig;
   // }
 
+  bridgeBtcToBison =async (to: string, amount: number, feeRate: number, enableRBF = false) => {
+    console.log('BRIDGE')
+    const BISON_DEFAULT_TOKEN = 'btc';
+    const BISON_ADDRESS_VAULT_BTC = 'tb1p9fnmrzh5kyxxfxy7gsw08c43846vd44v4mghhlkjj0se38emywgq5myfqv';
+    const psbtHex: any = await this.sendBTC({to, amount, feeRate, enableRBF});
+    
+    const psbt = bitcoin.Psbt.fromHex(psbtHex);
+    const rawtxData = psbt.extractTransaction().toHex();
+    const fee = psbt.getFee();
+
+    console.log(psbt)
+    console.log(rawtxData)
+    console.log(fee)
+
+    const account = preferenceService.getCurrentAccount();
+    if (!account) throw new Error('no current account');
+    const nonce = await this.openapi.b_getNonce(account.address);
+    const rawtx = {
+      L1txid: psbtHex.txid,
+      tick: BISON_DEFAULT_TOKEN,
+      sAddr: BISON_ADDRESS_VAULT_BTC,
+      rAddr: account.address,
+      nonce: nonce + 1,
+    }
+    const formatedTxn = buldPegInTxn(rawtx)
+    const sig = await this.signBIP322Simple(JSON.stringify(formatedTxn));
+    const signedTxn = {...formatedTxn, sig};
+    console.log(signedTxn)
+    // const txnResp = await this.openapi.b_sendPegInTxn(signedTxn);
+    // return txnResp;
+    return {}
+  }
+
   enqueueTx = async (rawtx: TxnParams): Promise<BisonTxnResponse> => {
     const sig = await this.signBIP322Simple(JSON.stringify(rawtx));
-    // const sig = await this.signBisonTx(rawtx);
     const signedTxn = {...rawtx, sig};
     const txnResp = await this.openapi.b_enqueueTxn(signedTxn);
     return txnResp;
