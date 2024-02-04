@@ -357,3 +357,33 @@ export interface ContractsBisonResponse {
 export interface BalanceBisonResponse {
   balance: number;
 }
+export interface TxnParams {
+    method?: string;
+    sAddr: string;
+    rAddr: string;
+    amt: number;
+    tick: string;
+    nonce?: number;
+    tokenContractAddress: string;
+    sig?: string;
+    gas_estimated?: number;
+    gas_estimated_hash?: string;
+}
+
+export interface BisonGetFeeResponse {
+  method?: string;
+  sAddr: string;
+  rAddr: string;
+  amt: number;
+  tick: string;
+  nonce: number;
+  tokenContractAddress: string;
+  sig: string;
+  gas_estimated: number;
+  gas_estimated_hash: string;
+}
+export interface BisonTxnResponse {
+  message: string;
+  tx_hash: string;
+}
+

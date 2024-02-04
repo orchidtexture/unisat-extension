@@ -28,12 +28,14 @@ import {
   AddressType,
   AddressUserToSignInput,
   BisonBalance,
+  BisonTxnResponse,
   BitcoinBalance,
   ContractBison,
   NetworkType,
   PublicKeyUserToSignInput,
   SignPsbtOptions,
   ToSignInput,
+  TxnParams,
   UTXO,
   WalletKeyring
 } from '@/shared/types';
@@ -49,6 +51,7 @@ import { ContactBookItem } from '../service/contactBook';
 import { OpenApiService } from '../service/openapi';
 import { ConnectedSite } from '../service/permission';
 import BaseController from './base';
+
 
 const stashKeyrings: Record<string, Keyring> = {};
 export type AccountAsset = {
@@ -498,19 +501,21 @@ export class WalletController extends BaseController {
   signMessage = async (text: string) => {
     const account = preferenceService.getCurrentAccount();
     if (!account) throw new Error('no current account');
-    return keyringService.signMessage(account.pubkey, text);
+    const sig = keyringService.signMessage(account.pubkey, text);
+    return sig
   };
 
   signBIP322Simple = async (text: string) => {
     const account = preferenceService.getCurrentAccount();
     if (!account) throw new Error('no current account');
     const networkType = this.getNetworkType();
-    return signMessageOfBIP322Simple({
+    const sig = signMessageOfBIP322Simple({
       message: text,
       address: account.address,
       networkType,
       wallet: this as any
     });
+    return sig
   };
 
   requestKeyring = (type: string, methodName: string, keyringId: number | null, ...params) => {
@@ -943,6 +948,40 @@ export class WalletController extends BaseController {
     return txid;
   };
 
+  // signBisonTx = async (rawtx: TxnParams): Promise<string> => {
+  //   console.log('Bison sign')
+  //   const networkType = this.getNetworkType();
+  //   let sig = ""
+  //   const signMessageOptions = {
+  //     payload: {
+  //       network: {
+  //         type: "Testnet",
+  //       },
+  //       address: rawtx.sAddr,
+  //       message: JSON.stringify(rawtx),
+  //     },
+  //     onFinish: (response) => {
+  //       console.log("response signature")
+  //       console.log(response)
+  //       sig = response;
+  //     },
+  //     onCancel: () => console.log("Request canceled."),
+  //   };
+  //   console.log('Data:')
+  //   console.log(signMessageOptions)
+  //   await signMessage(signMessageOptions);
+  //   console.log(sig)
+  //   return sig;
+  // }
+
+  enqueueTx = async (rawtx: TxnParams): Promise<BisonTxnResponse> => {
+    const sig = await this.signBIP322Simple(JSON.stringify(rawtx));
+    // const sig = await this.signBisonTx(rawtx);
+    const signedTxn = {...rawtx, sig};
+    const txnResp = await this.openapi.b_enqueueTxn(signedTxn);
+    return txnResp;
+  };
+
   getAccounts = async () => {
     const keyrings = await this.getKeyrings();
     const accounts: Account[] = keyrings.reduce<Account[]>((pre, cur) => pre.concat(cur.accounts), []);
@@ -1224,6 +1263,10 @@ export class WalletController extends BaseController {
 
   getFeeSummary = async () => {
     return openapiService.getFeeSummary();
+  };
+
+  b_getFeeSummary = async (address: string, receiver: string, tick: string, amount: number, tokenAddress: string) => {
+    return openapiService.b_getFeeSummary(address, receiver, amount, tick, tokenAddress);
   };
 
   inscribeBRC20Transfer = (address: string, tick: string, amount: string, feeRate: number) => {

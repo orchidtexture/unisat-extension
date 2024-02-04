@@ -1,12 +1,12 @@
-import { CSSProperties, useEffect, useState } from 'react';
-
 import { colors } from '@/ui/theme/colors';
 import { useWallet } from '@/ui/utils';
-
+import { CSSProperties, useEffect, useState } from 'react';
 import { Column } from '../Column';
 import { Input } from '../Input';
 import { Row } from '../Row';
 import { Text } from '../Text';
+
+
 
 enum FeeRateType {
   SLOW,
