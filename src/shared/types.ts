@@ -340,13 +340,14 @@ export interface TxnParams {
     method?: string;
     sAddr: string;
     rAddr: string;
-    amt: number;
+    amt?: number;
     tick: string;
     nonce?: number;
-    tokenContractAddress: string;
+    tokenContractAddress?: string;
     sig?: string;
     gas_estimated?: number;
     gas_estimated_hash?: string;
+    L1txid?: string;
 }
 
 export interface BisonGetFeeResponse {
