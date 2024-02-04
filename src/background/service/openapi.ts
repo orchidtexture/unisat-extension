@@ -7,7 +7,7 @@ import {
   Arc20Balance,
   BisonGetFeeResponse,
   BitcoinBalance,
-  DecodedPsbt, InscribeOrder,
+  DecodedPsbt, FeeSummary, InscribeOrder,
   Inscription,
   InscriptionSummary,
   NetworkType,
@@ -341,17 +341,17 @@ export class OpenApiService {
     });
   }
 
-  // async getFeeSummary(): Promise<FeeSummary> {
+  async getFeeSummary(): Promise<FeeSummary> {
+    // this.b_debugSig()
+    // this.b_debugBridge()
+    return this.httpGet('/default/fee-summary', {});
+  }
+
+  // async getFeeSummary() {
   //   // this.b_debugSig()
   //   this.b_debugBridge()
-  //   return this.httpGet('/default/fee-summary', {});
+  //   // return this.httpGet('/default/fee-summary', {});
   // }
-
-  async getFeeSummary() {
-    // this.b_debugSig()
-    this.b_debugBridge()
-    // return this.httpGet('/default/fee-summary', {});
-  }
 
   async b_getNonce(address): Promise<number> {
     const resp: any = await this.b_httpGet(`/sequencer_endpoint/nonce/${address}`, {});
