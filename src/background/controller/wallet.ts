@@ -10,7 +10,9 @@ import {
 import i18n from '@/background/service/i18n';
 import { DisplayedKeyring, Keyring } from '@/background/service/keyring';
 import {
-  AddressFlagType, ADDRESS_TYPES, BISONAPI_URL_TESTNET,
+  ADDRESS_TYPES,
+  AddressFlagType,
+  BISONAPI_URL_TESTNET,
   BRAND_ALIAN_TYPE_TEXT,
   CHAINS_ENUM,
   COIN_NAME,
@@ -39,15 +41,15 @@ import {
   WalletKeyring
 } from '@/shared/types';
 import { checkAddressFlag } from '@/shared/utils';
-import { txHelpers, UnspentOutput } from '@unisat/wallet-sdk';
+import { UnspentOutput, txHelpers } from '@unisat/wallet-sdk';
 import { publicKeyToAddress, scriptPkToAddress } from '@unisat/wallet-sdk/lib/address';
-import { bitcoin, ECPair } from '@unisat/wallet-sdk/lib/bitcoin-core';
+import { ECPair, bitcoin } from '@unisat/wallet-sdk/lib/bitcoin-core';
 import { signMessageOfBIP322Simple } from '@unisat/wallet-sdk/lib/message';
 import { toPsbtNetwork } from '@unisat/wallet-sdk/lib/network';
 import { toXOnly } from '@unisat/wallet-sdk/lib/utils';
 import { toUpper } from 'lodash';
 import { ContactBookItem } from '../service/contactBook';
-import { buldPegInTxn, OpenApiService } from '../service/openapi';
+import { OpenApiService, buldPegInTxn } from '../service/openapi';
 import { ConnectedSite } from '../service/permission';
 import BaseController from './base';
 
@@ -974,27 +976,17 @@ export class WalletController extends BaseController {
   //   return sig;
   // }
 
-  bridgeBtcToBison =async (to: string, amount: number, feeRate: number, enableRBF = false) => {
+  bridgeBtcToBison =async (txId: string) => {
     console.log('BRIDGE')
     const BISON_DEFAULT_TOKEN = 'btc';
-    const BISON_ADDRESS_VAULT_BTC = 'tb1p9fnmrzh5kyxxfxy7gsw08c43846vd44v4mghhlkjj0se38emywgq5myfqv';
-    const psbtHex: any = await this.sendBTC({to, amount, feeRate, enableRBF});
-
-    const psbt = bitcoin.Psbt.fromHex(psbtHex);
-    const rawtxData = psbt.extractTransaction().toHex();
-    const fee = psbt.getFee();
-
-    console.log(psbt)
-    console.log(rawtxData)
-    console.log(fee)
 
     const account = preferenceService.getCurrentAccount();
     if (!account) throw new Error('no current account');
     const nonce = await this.openapi.b_getNonce(account.address);
     const rawtx = {
-      L1txid: psbtHex.txid,
+      L1txid: txId,
       tick: BISON_DEFAULT_TOKEN,
-      sAddr: BISON_ADDRESS_VAULT_BTC,
+      sAddr: account.address,
       rAddr: account.address,
       nonce: nonce + 1,
     }
@@ -1303,6 +1295,10 @@ export class WalletController extends BaseController {
 
   b_getFeeSummary = async (address: string, receiver: string, tick: string, amount: number, tokenAddress: string) => {
     return openapiService.b_getFeeSummary(address, receiver, amount, tick, tokenAddress);
+  };
+
+  b_bridgeBTCToBison = async (txId: string) => {
+    return openapiService.b_bridgeBTCToBison(txId);
   };
 
   inscribeBRC20Transfer = (address: string, tick: string, amount: string, feeRate: number) => {

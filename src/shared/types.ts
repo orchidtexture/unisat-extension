@@ -170,6 +170,11 @@ export enum TxType {
   SEND_ATOMICALS_INSCRIPTION
 }
 
+export enum BisonTxType {
+  PEG_IN,
+  TRANSFER,
+}
+
 interface BaseUserToSignInput {
   index: number;
   sighashTypes: number[] | undefined;

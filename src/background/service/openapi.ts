@@ -403,10 +403,9 @@ export class OpenApiService {
     return 'enq';
   }
 
-  async b_debugBridge(): Promise<any> {
-    // const fee = await this.getFeeSummary()
-    const fee = await this.httpGet('/default/fee-summary', {});
-    const enq = await wallet.bridgeBtcToBison(BISON_ADDRESS_VAULT_BTC, 1000, fee.list[1].feeRate)
+  async b_bridgeBTCToBison(txId: string): Promise<any> {
+    console.log('openapi/b_bridgeBTCToBison')
+    const enq = await wallet.bridgeBtcToBison(txId)
     console.log(enq);
     return 'enq';
   }
