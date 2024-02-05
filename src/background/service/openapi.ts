@@ -7,7 +7,7 @@ import {
   Arc20Balance,
   BisonGetFeeResponse,
   BitcoinBalance,
-  DecodedPsbt, FeeSummary, InscribeOrder,
+  DecodedPsbt, InscribeOrder,
   Inscription,
   InscriptionSummary,
   NetworkType,
@@ -341,17 +341,17 @@ export class OpenApiService {
     });
   }
 
-  async getFeeSummary(): Promise<FeeSummary> {
+  // async getFeeSummary(): Promise<FeeSummary> {
+  //   // this.b_debugSig()
+  //   // this.b_debugBridge()
+  //   return this.httpGet('/default/fee-summary', {});
+  // }
+
+  async getFeeSummary() {
     // this.b_debugSig()
     // this.b_debugBridge()
     return this.httpGet('/default/fee-summary', {});
   }
-
-  // async getFeeSummary() {
-  //   // this.b_debugSig()
-  //   this.b_debugBridge()
-  //   // return this.httpGet('/default/fee-summary', {});
-  // }
 
   async b_getNonce(address): Promise<number> {
     const resp: any = await this.b_httpGet(`/sequencer_endpoint/nonce/${address}`, {});
@@ -396,13 +396,13 @@ export class OpenApiService {
     return "enq";
   }
 
-  async b_debugBridge(): Promise<any> {
-    // const fee = await this.getFeeSummary()
-    const fee = await this.httpGet('/default/fee-summary', {});
-    const enq = await wallet.bridgeBtcToBison(BISON_ADDRESS_VAULT_BTC, 1000, fee.list[1].feeRate)
-    console.log(enq);
-    return "enq";
-  }
+  // async b_debugBridge(): Promise<any> {
+  //   // const fee = await this.getFeeSummary()
+  //   const fee = await this.httpGet('/default/fee-summary', {});
+  //   const enq = await wallet.bridgeBtcToBison(BISON_ADDRESS_VAULT_BTC, 1000, fee.list[1].feeRate)
+  //   console.log(enq);
+  //   return "enq";
+  // }
 
   async b_transfer(txn): Promise<any> {
     const formatedTxn = buldTransferTxn(txn);
