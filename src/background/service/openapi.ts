@@ -43,14 +43,14 @@ enum API_STATUS {
 
 const buldTransferTxn = (txnInput: TxnParams) => {
   const txn: any = {
-    method: "transfer",
+    method: 'transfer',
     sAddr: txnInput.sAddr,
     rAddr: txnInput.rAddr,
     amt: txnInput.amt,
     tick: txnInput.tick,
     nonce: txnInput.nonce,
     tokenContractAddress: txnInput.tokenContractAddress,
-    sig: txnInput.sig || ""
+    sig: txnInput.sig || ''
   };
   if (txnInput.gas_estimated && txnInput.gas_estimated_hash) {
     txn.gas_estimated = txnInput.gas_estimated
@@ -61,13 +61,13 @@ const buldTransferTxn = (txnInput: TxnParams) => {
 
 export const buldPegInTxn = (txnInput: TxnParams) => {
   const txn: any = {
-    method: "peg_in",
+    method: 'peg_in',
     token: txnInput.tick || BISON_DEFAULT_TOKEN,
     L1txid: txnInput.L1txid,
     sAddr: txnInput.sAddr,
     rAddr: txnInput.rAddr,
     nonce: txnInput.nonce,
-    sig: txnInput.sig || ""
+    sig: txnInput.sig || ''
   };
   return txn;
 }
@@ -382,26 +382,25 @@ export class OpenApiService {
 
   async b_debugSig(): Promise<any> {
     const unsignedTxn = buldTransferTxn({
-      "method": "transfer",
-      "sAddr": "tb1pq53qftc428auwq7k08dtme6e7anwewslvfszp2exey8zkylkkf2qx24rlm",
-      "rAddr": "tb1pev4je3qurt2w7p5mf5d3jtsd0g2k6hkeldat4usmag27mmp3nljqthkvvz",
-      "amt": 1000,
-      "tick": "btc",
-      "tokenContractAddress": "tb1pqzv3xwp40antfxdslnddj6zda4r5uwdh89qy7rrzjsat4etrvxxqq2fmjq",
-      "sig": ""
+      'method': 'transfer',
+      'sAddr': 'tb1pq53qftc428auwq7k08dtme6e7anwewslvfszp2exey8zkylkkf2qx24rlm',
+      'rAddr': 'tb1pev4je3qurt2w7p5mf5d3jtsd0g2k6hkeldat4usmag27mmp3nljqthkvvz',
+      'amt': 1000,
+      'tick': 'btc',
+      'tokenContractAddress': 'tb1pqzv3xwp40antfxdslnddj6zda4r5uwdh89qy7rrzjsat4etrvxxqq2fmjq',
+      'sig': ''
     });
     const txWithNonceAndGas = await this.b_getFeeSummary(unsignedTxn.sAddr, unsignedTxn.rAddr, unsignedTxn.amt, unsignedTxn.tick, unsignedTxn.tokenContractAddress)
     const enq = await wallet.enqueueTx(txWithNonceAndGas)
     console.log(enq);
-    return "enq";
+    return 'enq';
   }
 
-  async b_debugBridge(): Promise<any> {
-    // const fee = await this.getFeeSummary()
-    const fee = await this.httpGet('/default/fee-summary', {});
-    const enq = await wallet.bridgeBtcToBison(BISON_ADDRESS_VAULT_BTC, 1000, fee.list[1].feeRate)
+  async bridgeBTCToBison(txId: string): Promise<any> {
+    console.log('openapi/b_bridgeBTCToBison')
+    const enq = await wallet.bridgeBtcToBison(txId)
     console.log(enq);
-    return "enq";
+    return 'enq';
   }
 
   async b_transfer(txn): Promise<any> {
@@ -412,7 +411,7 @@ export class OpenApiService {
 
   // TODO: find the real sig method
   async bip322sig(txn: any): Promise<any> {
-    console.log("first 322 sig method")
+    console.log('first 322 sig method')
     const message = JSON.stringify(txn);
     console.log(message)
     const sig = wallet.signBIP322Simple(message)

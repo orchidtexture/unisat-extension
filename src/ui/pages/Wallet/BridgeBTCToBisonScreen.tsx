@@ -250,7 +250,11 @@ export default function BridgeBTCToBisonScreen() {
         disabled={disabled}
         preset="primary"
         text="Deposit"
-        onClick={() => handleDeposit(currentAccount.address)}></Button>
+        onClick={() =>
+          navigate('BridgeToBisonCofirmScreen', {
+            txId: '739b1b5d0557db85fd5668b2310aa8834bebdf6366e22b5a2c95b9424a8685ac'
+          })
+        }></Button>
     </Content>
   );
 }

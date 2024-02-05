@@ -48,7 +48,7 @@ import { toPsbtNetwork } from '@unisat/wallet-sdk/lib/network';
 import { toXOnly } from '@unisat/wallet-sdk/lib/utils';
 import { toUpper } from 'lodash';
 import { ContactBookItem } from '../service/contactBook';
-import { buldPegInTxn, OpenApiService } from '../service/openapi';
+import { OpenApiService, buldPegInTxn } from '../service/openapi';
 import { ConnectedSite } from '../service/permission';
 import BaseController from './base';
 
@@ -974,27 +974,17 @@ export class WalletController extends BaseController {
   //   return sig;
   // }
 
-  bridgeBtcToBison =async (to: string, amount: number, feeRate: number, enableRBF = false) => {
+  bridgeBtcToBison =async (txId: string) => {
     console.log('BRIDGE')
     const BISON_DEFAULT_TOKEN = 'btc';
-    const BISON_ADDRESS_VAULT_BTC = 'tb1p9fnmrzh5kyxxfxy7gsw08c43846vd44v4mghhlkjj0se38emywgq5myfqv';
-    const psbtHex: any = await this.sendBTC({to, amount, feeRate, enableRBF});
-    
-    const psbt = bitcoin.Psbt.fromHex(psbtHex);
-    const rawtxData = psbt.extractTransaction().toHex();
-    const fee = psbt.getFee();
-
-    console.log(psbt)
-    console.log(rawtxData)
-    console.log(fee)
 
     const account = preferenceService.getCurrentAccount();
     if (!account) throw new Error('no current account');
     const nonce = await this.openapi.b_getNonce(account.address);
     const rawtx = {
-      L1txid: psbtHex.txid,
+      L1txid: txId,
       tick: BISON_DEFAULT_TOKEN,
-      sAddr: BISON_ADDRESS_VAULT_BTC,
+      sAddr: account.address,
       rAddr: account.address,
       nonce: nonce + 1,
     }
@@ -1299,6 +1289,10 @@ export class WalletController extends BaseController {
 
   b_getFeeSummary = async (address: string, receiver: string, tick: string, amount: number, tokenAddress: string) => {
     return openapiService.b_getFeeSummary(address, receiver, amount, tick, tokenAddress);
+  };
+
+  bridgeBTCToBison = async (txId: string) => {
+    return openapiService.bridgeBTCToBison(txId);
   };
 
   inscribeBRC20Transfer = (address: string, tick: string, amount: string, feeRate: number) => {

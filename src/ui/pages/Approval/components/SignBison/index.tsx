@@ -1,36 +1,24 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
-import { DecodedPsbt, RawTxInfo, SignPsbtOptions, ToSignInput, TxType } from '@/shared/types';
+import { BisonTxType, DecodedPsbt, ToSignInput } from '@/shared/types';
 import { Button, Card, Column, Content, Footer, Header, Icon, Layout, Row, Text } from '@/ui/components';
 import { useTools } from '@/ui/components/ActionComponent';
-import { AddressText } from '@/ui/components/AddressText';
 import { WarningPopover } from '@/ui/components/WarningPopover';
 import WebsiteBar from '@/ui/components/WebsiteBar';
 import { useAccountAddress, useCurrentAccount } from '@/ui/state/accounts/hooks';
 import { usePrepareSendBTCCallback, usePrepareSendOrdinalsInscriptionsCallback } from '@/ui/state/transactions/hooks';
-import { colors } from '@/ui/theme/colors';
 import { fontSizes } from '@/ui/theme/font';
-import { copyToClipboard, satoshisToAmount, shortAddress, useApproval, useWallet } from '@/ui/utils';
+import { copyToClipboard, shortAddress, useApproval, useWallet } from '@/ui/utils';
 import { LoadingOutlined } from '@ant-design/icons';
 
 interface Props {
   header?: React.ReactNode;
-  params: {
-    data: {
-      psbtHex: string;
-      options: SignPsbtOptions;
-      type: TxType;
-      toAddress?: string;
-      satoshis?: number;
-      feeRate?: number;
-      inscriptionId?: string;
-      rawTxInfo?: RawTxInfo;
-    };
-    session?: {
-      origin: string;
-      icon: string;
-      name: string;
-    };
+  txId: string;
+  type: BisonTxType;
+  session?: {
+    origin: string;
+    icon: string;
+    name: string;
   };
   handleCancel?: () => void;
   handleConfirm?: () => void;
@@ -41,78 +29,18 @@ interface InscriptioinInfo {
   isSent: boolean;
 }
 
-function SignTxDetails({ txInfo, type, rawTxInfo }: { txInfo: TxInfo; rawTxInfo?: RawTxInfo; type: TxType }) {
+function SignTxDetails({ txId, type }: { txId: string; type: BisonTxType }) {
   const address = useAccountAddress();
 
   const isCurrentToPayFee = useMemo(() => {
-    if (type === TxType.SIGN_TX) {
+    if (type === BisonTxType.PEG_IN) {
       return false;
     } else {
       return true;
     }
   }, [type]);
 
-  const spendSatoshis = useMemo(() => {
-    const inValue = txInfo.decodedPsbt.inputInfos
-      .filter((v) => v.address === address)
-      .reduce((pre, cur) => cur.value + pre, 0);
-    const outValue = txInfo.decodedPsbt.outputInfos
-      .filter((v) => v.address === address)
-      .reduce((pre, cur) => cur.value + pre, 0);
-    const spend = inValue - outValue;
-    return spend;
-  }, [txInfo.decodedPsbt]);
-
-  const sendingSatoshis = useMemo(() => {
-    const inValue = txInfo.decodedPsbt.inputInfos
-      .filter((v) => v.address === address)
-      .reduce((pre, cur) => cur.value + pre, 0);
-    return inValue;
-  }, [txInfo.decodedPsbt]);
-
-  const receivingSatoshis = useMemo(() => {
-    const outValue = txInfo.decodedPsbt.outputInfos
-      .filter((v) => v.address === address)
-      .reduce((pre, cur) => cur.value + pre, 0);
-    return outValue;
-  }, [txInfo.decodedPsbt]);
-
-  const spendAmount = useMemo(() => satoshisToAmount(spendSatoshis), [spendSatoshis]);
-  const balanceChangedAmount = useMemo(
-    () => satoshisToAmount(receivingSatoshis - sendingSatoshis),
-    [sendingSatoshis, receivingSatoshis]
-  );
-  const feeAmount = useMemo(() => satoshisToAmount(txInfo.decodedPsbt.fee), [txInfo.decodedPsbt]);
-
-  if (type === TxType.SIGN_TX) {
-    return (
-      <Column gap="lg">
-        <Text text="Sign Transaction" preset="title-bold" textCenter mt="lg" />
-        <Row justifyCenter>
-          <Card style={{ backgroundColor: '#272626', maxWidth: 320, width: 320 }}>
-            <Column gap="lg">
-              <Column>
-                <Column>
-                  <Column justifyCenter>
-                    <Row itemsCenter>
-                      <Text
-                        text={(receivingSatoshis > sendingSatoshis ? '+' : '') + balanceChangedAmount}
-                        color={receivingSatoshis > sendingSatoshis ? 'white' : 'white'}
-                        preset="bold"
-                        textCenter
-                        size="xxl"
-                      />
-                      <Text text="BTC" color="textDim" />
-                    </Row>
-                  </Column>
-                </Column>
-              </Column>
-            </Column>
-          </Card>
-        </Row>
-      </Column>
-    );
-  }
+  const feeAmount = 0; // TODO: Calculate for txn other than peg_in
 
   return (
     <Column gap="lg">
@@ -121,7 +49,7 @@ function SignTxDetails({ txInfo, type, rawTxInfo }: { txInfo: TxInfo; rawTxInfo?
         <Card style={{ backgroundColor: '#272626', maxWidth: 320, width: 320 }}>
           <Column gap="lg">
             <Column>
-              {rawTxInfo && (
+              {/* {rawTxInfo && (
                 <Column>
                   <Text text={'Send to'} textCenter color="textDim" />
                   <Row justifyCenter>
@@ -129,13 +57,13 @@ function SignTxDetails({ txInfo, type, rawTxInfo }: { txInfo: TxInfo; rawTxInfo?
                   </Row>
                 </Column>
               )}
-              {rawTxInfo && <Row style={{ borderTopWidth: 1, borderColor: colors.border }} my="md" />}
+              {rawTxInfo && <Row style={{ borderTopWidth: 1, borderColor: colors.border }} my="md" />} */}
 
               <Column>
                 <Text text={'Spend Amount'} textCenter color="textDim" />
 
                 <Column justifyCenter>
-                  <Text text={spendAmount} color="white" preset="bold" textCenter size="xxl" />
+                  {/* <Text text={spendAmount} color="white" preset="bold" textCenter size="xxl" /> */}
                   {isCurrentToPayFee && <Text text={`${feeAmount} (network fee)`} preset="sub" textCenter />}
                 </Column>
               </Column>
@@ -192,15 +120,7 @@ const initTxInfo: TxInfo = {
   }
 };
 
-export default function SignPsbt({
-  params: {
-    data: { psbtHex, options, type, toAddress, satoshis, inscriptionId, feeRate, rawTxInfo, ...rest },
-    session
-  },
-  header,
-  handleCancel,
-  handleConfirm
-}: Props) {
+export default function SignBIP322({ header, txId, type, session, handleCancel, handleConfirm }: Props) {
   const [resolveApproval, rejectApproval] = useApproval();
 
   const [txInfo, setTxInfo] = useState<TxInfo>(initTxInfo);
@@ -219,82 +139,42 @@ export default function SignPsbt({
   const [isWarningVisible, setIsWarningVisible] = useState(false);
 
   const init = async () => {
-    let txError = '';
-    if (type === TxType.SEND_BITCOIN) {
-      if (!psbtHex && toAddress && satoshis) {
-        try {
-          const rawTxInfo = await prepareSendBTC({
-            toAddressInfo: { address: toAddress, domain: '' },
-            toAmount: satoshis,
-            feeRate,
-            enableRBF: false
-          });
-          psbtHex = rawTxInfo.psbtHex;
-        } catch (e) {
-          console.log(e);
-          txError = (e as any).message;
-          tools.toastError(txError);
-        }
-      }
-    } else if (type === TxType.SEND_ORDINALS_INSCRIPTION) {
-      if (!psbtHex && toAddress && inscriptionId) {
-        try {
-          const rawTxInfo = await prepareSendOrdinalsInscriptions({
-            toAddressInfo: { address: toAddress, domain: '' },
-            inscriptionIds: [inscriptionId],
-            feeRate,
-            enableRBF: false
-          });
-          psbtHex = rawTxInfo.psbtHex;
-        } catch (e) {
-          console.log(e);
-          txError = (e as any).message;
-          tools.toastError(txError);
-        }
-      }
-    } else if (type === TxType.SEND_ATOMICALS_INSCRIPTION) {
-      // not support
-    }
+    // call signing method from openapifile
+    wallet.bridgeBTCToBison(txId);
+    // TODO: method in wallet to retrieve signed message
+    // method for enqueue peg in on button click instead of useeffect
 
-    if (!psbtHex) {
-      setLoading(false);
-      setTxInfo(Object.assign({}, initTxInfo, { txError }));
-      return;
-    }
+    // let txError = '';
+    // if (type === TxType.SEND_BITCOIN) {
+    //   if (!psbtHex && toAddress && satoshis) {
+    //     try {
+    //       const rawTxInfo = await prepareSendBTC({
+    //         toAddressInfo: { address: toAddress, domain: '' },
+    //         toAmount: satoshis,
+    //         feeRate,
+    //         enableRBF: false
+    //       });
+    //       psbtHex = rawTxInfo.psbtHex;
+    //     } catch (e) {
+    //       console.log(e);
+    //       txError = (e as any).message;
+    //       tools.toastError(txError);
+    //     }
+    //   }
+    // }
 
-    const { isScammer } = await wallet.checkWebsite(session?.origin || '');
+    // const { isScammer } = await wallet.checkWebsite(session?.origin || '');
 
-    const decodedPsbt = await wallet.decodePsbt(psbtHex);
-
-    if (decodedPsbt.risks.length > 0) {
-      setIsWarningVisible(true);
-    }
-
-    let toSignInputs: ToSignInput[] = [];
-    if (type === TxType.SEND_BITCOIN || type === TxType.SEND_ORDINALS_INSCRIPTION) {
-      toSignInputs = decodedPsbt.inputInfos.map((v, index) => ({
-        index,
-        publicKey: currentAccount.pubkey
-      }));
-    } else {
-      try {
-        toSignInputs = await wallet.formatOptionsToSignInputs(psbtHex, options);
-      } catch (e) {
-        txError = (e as Error).message;
-        tools.toastError(txError);
-      }
-    }
-
-    setTxInfo({
-      decodedPsbt,
-      changedBalance: 0,
-      changedInscriptions: [],
-      psbtHex,
-      rawtx: '',
-      toSignInputs,
-      txError,
-      isScammer
-    });
+    // setTxInfo({
+    //   decodedPsbt,
+    //   changedBalance: 0,
+    //   changedInscriptions: [],
+    //   psbtHex,
+    //   rawtx: '',
+    //   toSignInputs,
+    //   txError,
+    //   isScammer
+    // });
 
     setLoading(false);
   };
@@ -316,7 +196,7 @@ export default function SignPsbt({
   }
 
   const detailsComponent = useMemo(() => {
-    return <SignTxDetails txInfo={txInfo} rawTxInfo={rawTxInfo} type={type} />;
+    return <SignTxDetails txId={txId} type={type} />;
   }, [txInfo]);
 
   const isValid = useMemo(() => {
@@ -385,7 +265,7 @@ export default function SignPsbt({
           {hasHighRisk == false && (
             <Button
               preset="primary"
-              text={type == TxType.SIGN_TX ? 'Sign' : 'Sign & Pay'}
+              text={type == BisonTxType.PEG_IN ? 'Sign' : 'Sign & Pay'}
               onClick={handleConfirm}
               disabled={isValid == false}
               full
