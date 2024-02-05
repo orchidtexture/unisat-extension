@@ -974,7 +974,7 @@ export class WalletController extends BaseController {
   //   return sig;
   // }
 
-  bridgeBtcToBison =async (txId: string) => {
+  signBridgeBtcToBisonTxn =async (txId: string) => {
     console.log('BRIDGE')
     const BISON_DEFAULT_TOKEN = 'btc';
 
@@ -991,10 +991,9 @@ export class WalletController extends BaseController {
     const formatedTxn = buldPegInTxn(rawtx)
     const sig = await this.signBIP322Simple(JSON.stringify(formatedTxn));
     const signedTxn = {...formatedTxn, sig};
-    console.log(signedTxn)
     // const txnResp = await this.openapi.b_sendPegInTxn(signedTxn);
     // return txnResp;
-    return {}
+    return signedTxn
   }
 
   enqueueTx = async (rawtx: TxnParams): Promise<BisonTxnResponse> => {
@@ -1291,8 +1290,8 @@ export class WalletController extends BaseController {
     return openapiService.b_getFeeSummary(address, receiver, amount, tick, tokenAddress);
   };
 
-  bridgeBTCToBison = async (txId: string) => {
-    return openapiService.bridgeBTCToBison(txId);
+  b_signBridgeBtcToBisonTxn = async (txId: string) => {
+    return openapiService.signBridgeBtcToBisonTxn(txId);
   };
 
   inscribeBRC20Transfer = (address: string, tick: string, amount: string, feeRate: number) => {

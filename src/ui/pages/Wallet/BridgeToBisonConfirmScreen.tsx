@@ -20,7 +20,6 @@ export default function BridgeToBisonConfirmScreen() {
   const { txId } = state as {
     txId: string;
   };
-  console.log(txId);
   return (
     <SignBIP322
       header=<Header

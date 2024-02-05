@@ -5,8 +5,6 @@ import { Button, Card, Column, Content, Footer, Header, Icon, Layout, Row, Text 
 import { useTools } from '@/ui/components/ActionComponent';
 import { WarningPopover } from '@/ui/components/WarningPopover';
 import WebsiteBar from '@/ui/components/WebsiteBar';
-import { useAccountAddress, useCurrentAccount } from '@/ui/state/accounts/hooks';
-import { usePrepareSendBTCCallback, usePrepareSendOrdinalsInscriptionsCallback } from '@/ui/state/transactions/hooks';
 import { fontSizes } from '@/ui/theme/font';
 import { copyToClipboard, shortAddress, useApproval, useWallet } from '@/ui/utils';
 import { LoadingOutlined } from '@ant-design/icons';
@@ -30,8 +28,6 @@ interface InscriptioinInfo {
 }
 
 function SignTxDetails({ txId, type }: { txId: string; type: BisonTxType }) {
-  const address = useAccountAddress();
-
   const isCurrentToPayFee = useMemo(() => {
     if (type === BisonTxType.PEG_IN) {
       return false;
@@ -125,22 +121,24 @@ export default function SignBIP322({ header, txId, type, session, handleCancel, 
 
   const [txInfo, setTxInfo] = useState<TxInfo>(initTxInfo);
 
-  const prepareSendBTC = usePrepareSendBTCCallback();
-  const prepareSendOrdinalsInscriptions = usePrepareSendOrdinalsInscriptionsCallback();
+  const [signedTxn, setSignedTxn] = useState();
 
   const wallet = useWallet();
   const [loading, setLoading] = useState(true);
 
   const tools = useTools();
 
-  const address = useAccountAddress();
-  const currentAccount = useCurrentAccount();
-
   const [isWarningVisible, setIsWarningVisible] = useState(false);
 
+  console.log(signedTxn);
+
   const init = async () => {
-    // call signing method from openapifile
-    wallet.bridgeBTCToBison(txId);
+    if (type === BisonTxType.PEG_IN) {
+      const signedTxn = await wallet.b_signBridgeBtcToBisonTxn(txId);
+      setSignedTxn(signedTxn);
+    } else {
+      // Logic for transfer
+    }
     // TODO: method in wallet to retrieve signed message
     // method for enqueue peg in on button click instead of useeffect
 
@@ -199,16 +197,6 @@ export default function SignBIP322({ header, txId, type, session, handleCancel, 
     return <SignTxDetails txId={txId} type={type} />;
   }, [txInfo]);
 
-  const isValid = useMemo(() => {
-    if (txInfo.toSignInputs.length == 0) {
-      return false;
-    }
-    if (txInfo.decodedPsbt.inputInfos.length == 0) {
-      return false;
-    }
-    return true;
-  }, [txInfo.decodedPsbt, txInfo.toSignInputs]);
-
   const hasHighRisk = useMemo(() => {
     if (txInfo && txInfo.decodedPsbt) {
       return txInfo.decodedPsbt.risks.find((v) => v.level === 'high') ? true : false;
@@ -265,9 +253,9 @@ export default function SignBIP322({ header, txId, type, session, handleCancel, 
           {hasHighRisk == false && (
             <Button
               preset="primary"
-              text={type == BisonTxType.PEG_IN ? 'Sign' : 'Sign & Pay'}
+              text={type == BisonTxType.PEG_IN ? 'Confirm' : 'Confirm & Pay'}
               onClick={handleConfirm}
-              disabled={isValid == false}
+              disabled={!signedTxn}
               full
             />
           )}

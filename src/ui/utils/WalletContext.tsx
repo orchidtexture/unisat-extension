@@ -190,7 +190,7 @@ export interface WalletController {
   setAccountAlianName(account: Account, name: string): Promise<Account>;
   getFeeSummary(): Promise<FeeSummary>;
   b_getFeeSummary(address: string, receiver: string, tick: string, amount: number, tokenAddress: string): Promise<any>;
-  bridgeBTCToBison(txId: string): Promise<any>;
+  b_signBridgeBtcToBisonTxn(txId: string): Promise<any>;
 
   setEditingKeyring(keyringIndex: number): Promise<void>;
   getEditingKeyring(): Promise<WalletKeyring>;

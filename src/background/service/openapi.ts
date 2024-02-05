@@ -396,11 +396,9 @@ export class OpenApiService {
     return 'enq';
   }
 
-  async bridgeBTCToBison(txId: string): Promise<any> {
-    console.log('openapi/b_bridgeBTCToBison')
-    const enq = await wallet.bridgeBtcToBison(txId)
-    console.log(enq);
-    return 'enq';
+  async signBridgeBtcToBisonTxn(txId: string): Promise<any> {
+    const signedTxn = await wallet.signBridgeBtcToBisonTxn(txId)
+    return signedTxn;
   }
 
   async b_transfer(txn): Promise<any> {
