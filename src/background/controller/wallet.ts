@@ -10,9 +10,7 @@ import {
 import i18n from '@/background/service/i18n';
 import { DisplayedKeyring, Keyring } from '@/background/service/keyring';
 import {
-  ADDRESS_TYPES,
-  AddressFlagType,
-  BISONAPI_URL_TESTNET,
+  AddressFlagType, ADDRESS_TYPES, BISONAPI_URL_TESTNET,
   BRAND_ALIAN_TYPE_TEXT,
   CHAINS_ENUM,
   COIN_NAME,
@@ -28,6 +26,7 @@ import {
   AddressType,
   AddressUserToSignInput,
   BisonBalance,
+  BisonGetFeeResponse,
   BisonTxnResponse,
   BitcoinBalance,
   ContractBison,
@@ -40,15 +39,15 @@ import {
   WalletKeyring
 } from '@/shared/types';
 import { checkAddressFlag } from '@/shared/utils';
-import { UnspentOutput, txHelpers } from '@unisat/wallet-sdk';
+import { txHelpers, UnspentOutput } from '@unisat/wallet-sdk';
 import { publicKeyToAddress, scriptPkToAddress } from '@unisat/wallet-sdk/lib/address';
-import { ECPair, bitcoin } from '@unisat/wallet-sdk/lib/bitcoin-core';
+import { bitcoin, ECPair } from '@unisat/wallet-sdk/lib/bitcoin-core';
 import { signMessageOfBIP322Simple } from '@unisat/wallet-sdk/lib/message';
 import { toPsbtNetwork } from '@unisat/wallet-sdk/lib/network';
 import { toXOnly } from '@unisat/wallet-sdk/lib/utils';
 import { toUpper } from 'lodash';
 import { ContactBookItem } from '../service/contactBook';
-import { OpenApiService, buldPegInTxn } from '../service/openapi';
+import { buldPegInTxn, OpenApiService } from '../service/openapi';
 import { ConnectedSite } from '../service/permission';
 import BaseController from './base';
 
@@ -1296,6 +1295,10 @@ export class WalletController extends BaseController {
 
   getFeeSummary = async () => {
     return openapiService.getFeeSummary();
+  };
+
+  enqueueTxTest = async (rawTx: BisonGetFeeResponse) => {
+    return openapiService.enqueueTxTest(rawTx);
   };
 
   b_getFeeSummary = async (address: string, receiver: string, tick: string, amount: number, tokenAddress: string) => {

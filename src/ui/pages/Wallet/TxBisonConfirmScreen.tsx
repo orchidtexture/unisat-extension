@@ -80,7 +80,7 @@ export default function TxBisonConfirmScreen() {
 
   const handleSign = () => {
     console.log('handleSign')
-    wallet.enqueueTx(rawTx)
+    wallet.enqueueTxTest(rawTx)
       .then((r) => {
         console.log(r);
         navigate('TxBisonSuccessScreen')

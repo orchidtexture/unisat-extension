@@ -342,16 +342,16 @@ export class OpenApiService {
   }
 
   async getFeeSummary(): Promise<FeeSummary> {
-    // this.b_debugSig()
+    this.b_debugSig()
     // this.b_debugBridge()
     return this.httpGet('/default/fee-summary', {});
   }
 
-  // async getFeeSummary() {
-  //   // this.b_debugSig()
-  //   this.b_debugBridge()
-  //   // return this.httpGet('/default/fee-summary', {});
-  // }
+  async enqueueTxTest(rawTx: BisonGetFeeResponse) {
+    this.b_enqueueTxServTest(rawTx)
+    // this.b_debugBridge()
+    // return this.httpGet('/default/fee-summary', {});
+  }
 
   async b_getNonce(address): Promise<number> {
     const resp: any = await this.b_httpGet(`/sequencer_endpoint/nonce/${address}`, {});
@@ -359,6 +359,7 @@ export class OpenApiService {
   }
 
   async b_getFeeSummary(sAddr: string, rAddr: string, amt: number, tick: string, tokenContractAddress: string): Promise<BisonGetFeeResponse> {
+    console.log('DEBUG TRANSFER!!')
     let nonce = await this.b_getNonce(sAddr);
     nonce += 1;
     const txn = buldTransferTxn({sAddr, rAddr, amt, tick, tokenContractAddress, nonce});
@@ -392,6 +393,12 @@ export class OpenApiService {
     });
     const txWithNonceAndGas = await this.b_getFeeSummary(unsignedTxn.sAddr, unsignedTxn.rAddr, unsignedTxn.amt, unsignedTxn.tick, unsignedTxn.tokenContractAddress)
     const enq = await wallet.enqueueTx(txWithNonceAndGas)
+    console.log(enq);
+    return 'enq';
+  }
+
+  async b_enqueueTxServTest(unsignedTxn: BisonGetFeeResponse): Promise<any> {
+    const enq = await wallet.enqueueTx(unsignedTxn)
     console.log(enq);
     return 'enq';
   }
