@@ -1006,19 +1006,18 @@ export class WalletController extends BaseController {
     const nonce = await this.openapi.b_getNonce(account.address);
     const rawTx = { // bison api format
       method: 'transfer',
-      tick: params.tick,
       sAddr: account.address,
       rAddr: params.receiverAddress,
+      amt: params.amount,
+      tick: params.tick,
       nonce: nonce + 1,
       tokenContractAddress: params.tokenContractAddress,
-      amt: params.amount,
-      sig: '',
-      gas_estimated: params.gasEstimated,
-      gas_estimated_hash: params.gasEstimatedHash
+      sig: ''
     }
     console.log('Signing bison transfer...')
     const sig = await this.signBIP322Simple(JSON.stringify(rawTx));
-    const signedTxn = {...rawTx, sig};
+    const signedTxn = {...rawTx, sig, gas_estimated: params.gasEstimated,
+      gas_estimated_hash: params.gasEstimatedHash };
     return signedTxn
   }
 
@@ -1454,7 +1453,7 @@ export class WalletController extends BaseController {
         const balanceResponse = await response.json();
 
         return {
-          ticker: toUpper(contract.tick),
+          ticker: contract.tick,
           balance: balanceResponse.balance,
           contractAddress: contract.contractAddr
         };
