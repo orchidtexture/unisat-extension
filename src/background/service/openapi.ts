@@ -378,7 +378,7 @@ export class OpenApiService {
     return tx;
   }
 
-  async b_sendPegInTxn(txn): Promise<any> {
+  async b_enqueuePegInTxn(txn): Promise<any> {
     const formatedTxn = buldPegInTxn(txn);
     const tx: any = this.b_httpPost('/sequencer_endpoint/enqueue_transaction', formatedTxn);
     return tx;

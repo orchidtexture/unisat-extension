@@ -125,7 +125,7 @@ export default function BridgeBTCToBisonScreen() {
     const success = true;
     if (success) {
       navigate('BridgeToBisonCofirmScreen', {
-        txId: '739b1b5d0557db85fd5668b2310aa8834bebdf6366e22b5a2c95b9424a8685ac'
+        txId: '35e70ec80fd8b6574345cbb8180984354c4eba3f7f3843dce03fba51552448dc'
       });
       // try {
       //   console.log('after nonce');

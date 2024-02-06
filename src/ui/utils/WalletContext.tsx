@@ -12,6 +12,7 @@ import {
   AppSummary,
   Arc20Balance,
   BisonBalance,
+  BisonSequencerPegInMessage,
   BisonTxnResponse,
   BitcoinBalance,
   DecodedPsbt,
@@ -195,7 +196,8 @@ export interface WalletController {
   b_getFeeSummary(address: string, receiver: string, tick: string, amount: number, tokenAddress: string): Promise<any>;
   b_signBridgeBtcToBisonTxn(txId: string): Promise<any>;
   b_signTransferTxn(params: UnsignedTransferTxn): Promise<SignedTransferTxn>;
-  enqueueTransferTxn(txn: SignedTransferTxn): Promise<BisonTxnResponse>
+  enqueuePegInTxn(txn: BisonSequencerPegInMessage): Promise<BisonTxnResponse>;
+  enqueueTransferTxn(txn: SignedTransferTxn): Promise<BisonTxnResponse>;
 
   setEditingKeyring(keyringIndex: number): Promise<void>;
   getEditingKeyring(): Promise<WalletKeyring>;
@@ -319,4 +321,3 @@ const useWallet = () => {
 };
 
 export { WalletProvider, useWallet };
-

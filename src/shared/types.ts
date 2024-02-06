@@ -377,6 +377,16 @@ export interface TxnParams {
     L1txid?: string;
 }
 
+export interface BisonSequencerPegInMessage {
+  method: string,
+  token: string,
+  L1txid: string,
+  sAddr: string,
+  rAddr: string,
+  nonce: number,
+  sig: string,
+}
+
 export interface SignedTransferTxn {
   method: string,
   tick: string,

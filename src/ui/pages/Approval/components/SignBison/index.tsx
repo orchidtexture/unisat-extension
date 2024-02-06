@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
-import { BisonTxType, DecodedPsbt, SignedTransferTxn, ToSignInput } from '@/shared/types';
+import { BisonSequencerPegInMessage, BisonTxType, DecodedPsbt, SignedTransferTxn, ToSignInput } from '@/shared/types';
 import { Button, Card, Column, Content, Footer, Header, Icon, Layout, Row, Text } from '@/ui/components';
 import { useTools } from '@/ui/components/ActionComponent';
 import { WarningPopover } from '@/ui/components/WarningPopover';
@@ -126,7 +126,8 @@ export default function SignBIP322({
   type,
   session,
   handleCancel,
-  handleConfirm }: Props) {
+  handleConfirm
+}: Props) {
   console.log('senderAddress', senderAddress);
   console.log('receiverAddress', receiverAddress);
   console.log('amount', amount);
@@ -138,7 +139,7 @@ export default function SignBIP322({
   const [resolveApproval, rejectApproval] = useApproval();
   const navigate = useNavigate();
   const [txInfo, setTxInfo] = useState<TxInfo>(initTxInfo);
-  const [signedTxn, setSignedTxn] = useState<boolean>(false);
+  const [signedTxn, setSignedTxn] = useState<BisonSequencerPegInMessage | null>(null);
   const [signedTransferTxn, setSignedTransferTxn] = useState<SignedTransferTxn | null>(null);
 
   const wallet = useWallet();
@@ -150,21 +151,32 @@ export default function SignBIP322({
 
   const handleConfirmTransfer = async (txn: SignedTransferTxn) => {
     try {
-      const res = await wallet.enqueueTransferTxn(txn)
-      console.log(res)
+      const res = await wallet.enqueueTransferTxn(txn);
+      console.log(res);
       navigate('TxSuccessScreen', { txid: res.tx_hash });
-    } catch(error){
-      console.log('error sending txn', error)
+    } catch (error) {
+      console.log('error sending txn', error);
       navigate('TxFailScreen', { error });
     }
-  }
+  };
+
+  const handleConfirmPegIn = async (txn: BisonSequencerPegInMessage) => {
+    try {
+      const res = await wallet.enqueuePegInTxn(txn);
+      console.log(res);
+      navigate('TxSuccessScreen', { txid: res.tx_hash });
+    } catch (error) {
+      console.log('error sending txn', error);
+      navigate('TxFailScreen', { error });
+    }
+  };
 
   console.log(signedTxn);
 
   const init = async () => {
     switch (type) {
-      case BisonTxType.PEG_IN:{
-        if (!txId) throw new Error('txId is required in PEG_IN type')
+      case BisonTxType.PEG_IN: {
+        if (!txId) throw new Error('txId is required in PEG_IN type');
         const signedTxn = await wallet.b_signBridgeBtcToBisonTxn(txId);
         setSignedTxn(signedTxn);
         break;
@@ -177,8 +189,9 @@ export default function SignBIP322({
           !gasEstimated ||
           !gasEstimatedHash ||
           !tick ||
-          !tokenContractAddress) {
-          throw new Error('Invalid params in TRANSFER type')
+          !tokenContractAddress
+        ) {
+          throw new Error('Invalid params in TRANSFER type');
         }
         const signedTxn = await wallet.b_signTransferTxn({
           senderAddress,
@@ -188,10 +201,9 @@ export default function SignBIP322({
           tick,
           gasEstimated,
           gasEstimatedHash
-        })
-        console.log('signedTxn', signedTxn)
+        });
+        console.log('signedTxn', signedTxn);
         setSignedTransferTxn(signedTxn);
-        setSignedTxn(true);
       }
     }
     setLoading(false);
@@ -215,7 +227,7 @@ export default function SignBIP322({
 
   const detailsComponent = useMemo(() => {
     if (type === BisonTxType.PEG_IN) {
-      if (!txId) throw Error('Invalid parameter txId')
+      if (!txId) throw Error('Invalid parameter txId');
       return <SignTxDetails txId={txId} type={type} />;
     }
   }, [txInfo]);
@@ -248,29 +260,45 @@ export default function SignBIP322({
     );
   }
 
+  const handleOnClick = () => {
+    switch (type) {
+      case BisonTxType.PEG_IN:
+        if (!signedTxn) throw new Error('txn not signed yet');
+        handleConfirmPegIn(signedTxn);
+        break;
+      default:
+        if (!signedTransferTxn) throw new Error('txn not signed yet');
+        handleConfirmTransfer(signedTransferTxn);
+        break;
+    }
+  };
+
   return (
     <Layout>
       {header}
       <Content>
         <Column gap="xl">
-          {type === BisonTxType.PEG_IN
-            ? detailsComponent
-            : (<><Section title='from'>
-              <Text>{signedTransferTxn?.sAddr}</Text>
-            </Section>
-            <Section title='to'>
-              <Text>{signedTransferTxn?.rAddr}</Text>
-            </Section>
-            <Section title='fee'>
-              <Text>{signedTransferTxn?.gas_estimated}</Text>
-            </Section>
-            <Section title='token'>
-              <Text>{signedTransferTxn?.tick}</Text>
-            </Section>
-            <Section title='amount'>
-              <Text>{signedTransferTxn?.amt}</Text>
-            </Section></>)
-          }
+          {type === BisonTxType.PEG_IN ? (
+            detailsComponent
+          ) : (
+            <>
+              <Section title="from">
+                <Text>{signedTransferTxn?.sAddr}</Text>
+              </Section>
+              <Section title="to">
+                <Text>{signedTransferTxn?.rAddr}</Text>
+              </Section>
+              <Section title="fee">
+                <Text>{signedTransferTxn?.gas_estimated}</Text>
+              </Section>
+              <Section title="token">
+                <Text>{signedTransferTxn?.tick}</Text>
+              </Section>
+              <Section title="amount">
+                <Text>{signedTransferTxn?.amt}</Text>
+              </Section>
+            </>
+          )}
           <Section title="PSBT Data:">
             <Text text={shortAddress(txInfo.psbtHex, 10)} />
             <Row
@@ -294,11 +322,8 @@ export default function SignBIP322({
             <Button
               preset="primary"
               text={type == BisonTxType.PEG_IN ? 'Confirm' : 'Confirm & Pay'}
-              onClick={type === BisonTxType.PEG_IN ? handleConfirm : () => {
-                if(!signedTransferTxn) throw new Error('txn not signed yet')
-                handleConfirmTransfer(signedTransferTxn)
-              }}
-              disabled={!signedTxn}
+              onClick={handleOnClick}
+              disabled={!signedTxn && !signedTransferTxn}
               full
             />
           )}

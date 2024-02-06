@@ -28,6 +28,7 @@ import {
   AddressType,
   AddressUserToSignInput,
   BisonBalance,
+  BisonSequencerPegInMessage,
   BisonTxnResponse,
   BitcoinBalance,
   ContractBison,
@@ -1025,6 +1026,11 @@ export class WalletController extends BaseController {
     const sig = await this.signBIP322Simple(JSON.stringify(rawtx));
     const signedTxn = {...rawtx, sig};
     const txnResp = await this.openapi.b_enqueueTxn(signedTxn);
+    return txnResp;
+  };
+
+  enqueuePegInTxn = async (txn: BisonSequencerPegInMessage,): Promise<BisonTxnResponse> => {
+    const txnResp = await this.openapi.b_enqueuePegInTxn(txn);
     return txnResp;
   };
 

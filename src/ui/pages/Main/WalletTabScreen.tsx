@@ -615,43 +615,43 @@ function BitcoinBalance() {
   );
 }
 
-function BisonBalanceList() {
-  // const navigate = useNavigate();
-  const currentAccount = useCurrentAccount();
+// function BisonBalanceList() {
+//   // const navigate = useNavigate();
+//   const currentAccount = useCurrentAccount();
 
-  const [total, setTotal] = useState('1000');
+//   const [total, setTotal] = useState('1000');
 
-  const tools = useTools();
-  const fetchData = async () => {
-    const btcEndpointUrl = 'https://testnet.bisonlabs.io/btc_endpoint/balance';
-    const data = { address: currentAccount.address };
-    try {
-      const response = await fetch(btcEndpointUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      });
-      const res = await response.json();
-      setTotal(res.balance);
-      console.log('fetched btc balance from bison testnet');
-    } catch (e) {
-      tools.toastError((e as Error).message);
-    }
-  };
-  useEffect(() => {
-    fetchData();
-  }, []);
+//   const tools = useTools();
+//   const fetchData = async () => {
+//     const btcEndpointUrl = 'https://testnet.bisonlabs.io/btc_endpoint/balance';
+//     const data = { address: currentAccount.address };
+//     try {
+//       const response = await fetch(btcEndpointUrl, {
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json'
+//         },
+//         body: JSON.stringify(data)
+//       });
+//       const res = await response.json();
+//       setTotal(res.balance);
+//       console.log('fetched btc balance from bison testnet');
+//     } catch (e) {
+//       tools.toastError((e as Error).message);
+//     }
+//   };
+//   useEffect(() => {
+//     fetchData();
+//   }, []);
 
-  // emulates interface for bison data structure just to reuse bison balance card component
-  const bisonBalanceData = {
-    ticker: 'LABB',
-    balance: Number(total)
-  };
+//   // emulates interface for bison data structure just to reuse bison balance card component
+//   const bisonBalanceData = {
+//     ticker: 'LABB',
+//     balance: Number(total)
+//   };
 
-  return <BisonBalanceCard bisonBalance={bisonBalanceData} />;
-}
+//   return <BisonBalanceCard bisonBalance={bisonBalanceData} />;
+// }
 
 function AtomicalList() {
   const navigate = useNavigate();
