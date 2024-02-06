@@ -1,10 +1,8 @@
 // this script is injected into webpage's context
-import { ethErrors, serializeError } from 'eth-rpc-errors';
-import { EventEmitter } from 'events';
-
 import { TxType } from '@/shared/types';
 import BroadcastChannelMessage from '@/shared/utils/message/broadcastChannelMessage';
-
+import { ethErrors, serializeError } from 'eth-rpc-errors';
+import { EventEmitter } from 'events';
 import PushEventHandlers from './pushEventHandlers';
 import ReadyPromise from './readyPromise';
 import { $, domReadyCall } from './utils';
@@ -12,14 +10,14 @@ import { $, domReadyCall } from './utils';
 const log = (event, ...args) => {
   if (process.env.NODE_ENV !== 'production') {
     // console.log(
-    //   `%c [unisat] (${new Date().toTimeString().slice(0, 8)}) ${event}`,
+    //   `%c [kondor] (${new Date().toTimeString().slice(0, 8)}) ${event}`,
     //   'font-weight: 600; background-color: #7d6ef9; color: white;',
     //   ...args
     // );
   }
 };
 const script = document.currentScript;
-const channelName = script?.getAttribute('channel') || 'UNISAT';
+const channelName = script?.getAttribute('channel') || 'KONDOR';
 
 export interface Interceptor {
   onRequest?: (data: any) => any;
@@ -34,7 +32,7 @@ interface StateProvider {
   isPermanentlyDisconnected: boolean;
 }
 const EXTENSION_CONTEXT_INVALIDATED_CHROMIUM_ERROR = 'Extension context invalidated.';
-export class UnisatProvider extends EventEmitter {
+export class KondorProvider extends EventEmitter {
   _selectedAddress: string | null = null;
   _network: string | null = null;
   _isConnected = false;
@@ -324,23 +322,23 @@ export class UnisatProvider extends EventEmitter {
 
 declare global {
   interface Window {
-    unisat: UnisatProvider;
+    kondor: KondorProvider;
   }
 }
 
-const provider = new UnisatProvider();
+const provider = new KondorProvider();
 
-if (!window.unisat) {
-  window.unisat = new Proxy(provider, {
+if (!window.kondor) {
+  window.kondor = new Proxy(provider, {
     deleteProperty: () => true
   });
 }
 
-Object.defineProperty(window, 'unisat', {
+Object.defineProperty(window, 'kondor', {
   value: new Proxy(provider, {
     deleteProperty: () => true
   }),
   writable: false
 });
 
-window.dispatchEvent(new Event('unisat#initialized'));
+window.dispatchEvent(new Event('kondor#initialized'));
