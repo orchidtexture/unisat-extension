@@ -1,9 +1,9 @@
 import { ethErrors } from 'eth-rpc-errors';
+import { KondorProvider } from './index';
 
-import { UnisatProvider } from './index';
 
 class PushEventHandlers {
-  provider: UnisatProvider;
+  provider: KondorProvider;
 
   constructor(provider) {
     this.provider = provider;
