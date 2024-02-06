@@ -43,7 +43,7 @@ enum API_STATUS {
   SUCCESS = 0
 }
 
-const buldTransferTxn = (txnInput: TxnParams) => {
+export const buldTransferTxn = (txnInput: TxnParams) => {
   const txn: any = {
     method: 'transfer',
     sAddr: txnInput.sAddr,
@@ -374,6 +374,8 @@ export class OpenApiService {
 
   async b_enqueueTxn(txn): Promise<any> {
     const formatedTxn = buldTransferTxn(txn);
+    console.log('senging to api: ')
+    console.log(JSON.stringify(formatedTxn))
     const tx: any = this.b_httpPost('/sequencer_endpoint/enqueue_transaction', formatedTxn);
     return tx;
   }

@@ -151,6 +151,7 @@ export default function SignBIP322({
 
   const handleConfirmTransfer = async (txn: SignedTransferTxn) => {
     try {
+      console.log('starting to enqueue tx...');
       const res = await wallet.enqueueTransferTxn(txn);
       console.log(res);
       navigate('TxSuccessScreen', { txid: res.tx_hash });

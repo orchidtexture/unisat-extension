@@ -51,7 +51,7 @@ import { toPsbtNetwork } from '@unisat/wallet-sdk/lib/network';
 import { toXOnly } from '@unisat/wallet-sdk/lib/utils';
 import { toUpper } from 'lodash';
 import { ContactBookItem } from '../service/contactBook';
-import { OpenApiService, buldPegInTxn } from '../service/openapi';
+import { OpenApiService, buldPegInTxn, buldTransferTxn } from '../service/openapi';
 import { ConnectedSite } from '../service/permission';
 import BaseController from './base';
 
@@ -1012,13 +1012,24 @@ export class WalletController extends BaseController {
       tick: params.tick,
       nonce: nonce + 1,
       tokenContractAddress: params.tokenContractAddress,
-      sig: ''
+      sig: '',
+      gas_estimated: params.gasEstimated,
+      gas_estimated_hash: params.gasEstimatedHash
     }
-    console.log('Signing bison transfer...')
-    const sig = await this.signBIP322Simple(JSON.stringify(rawTx));
-    const signedTxn = {...rawTx, sig, gas_estimated: params.gasEstimated,
-      gas_estimated_hash: params.gasEstimatedHash };
-    return signedTxn
+    const rawFormated = buldTransferTxn(rawTx);
+    console.log('just before signature');
+    console.log(JSON.stringify(rawFormated));
+    const sig = await this.signBIP322Simple(JSON.stringify(rawFormated));
+    console.log('after signature: ', sig);
+    const signedTxn = {
+      ...rawTx,
+      sig,
+      gas_estimated: params.gasEstimated,
+      gas_estimated_hash: params.gasEstimatedHash
+    };
+
+    console.log(signedTxn);
+    return buldTransferTxn(signedTxn)
   }
 
   enqueueTx = async (rawtx: TxnParams,): Promise<BisonTxnResponse> => {
@@ -1034,7 +1045,10 @@ export class WalletController extends BaseController {
   };
 
   enqueueTransferTxn = async (txn: SignedTransferTxn,): Promise<BisonTxnResponse> => {
-    const txnResp = await this.openapi.b_enqueueTxn(txn);
+    const rawTxFormated = buldTransferTxn(txn);
+    console.log('*********************************************************')
+    console.log(JSON.stringify(rawTxFormated))
+    const txnResp = await this.openapi.b_enqueueTxn(rawTxFormated);
     return txnResp;
   };
 
