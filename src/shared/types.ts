@@ -170,6 +170,11 @@ export enum TxType {
   SEND_ATOMICALS_INSCRIPTION
 }
 
+export enum BisonTxType {
+  PEG_IN,
+  TRANSFER,
+}
+
 interface BaseUserToSignInput {
   index: number;
   sighashTypes: number[] | undefined;
@@ -370,6 +375,29 @@ export interface TxnParams {
     gas_estimated?: number;
     gas_estimated_hash?: string;
     L1txid?: string;
+}
+
+export interface SignedTransferTxn {
+  method: string,
+  tick: string,
+  sAddr: string,
+  rAddr: string,
+  nonce: number,
+  amt: number,
+  tokenContractAddress: string,
+  gas_estimated: number,
+  gas_estimated_hash: string,
+  sig: string,
+}
+
+export interface UnsignedTransferTxn {
+  senderAddress: string,
+  receiverAddress: string,
+  amount: number,
+  tokenContractAddress: string,
+  tick: string
+  gasEstimated: number,
+  gasEstimatedHash: string
 }
 
 export interface BisonGetFeeResponse {

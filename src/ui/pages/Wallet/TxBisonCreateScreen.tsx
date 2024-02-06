@@ -75,6 +75,8 @@ export default function TxBisonCreateScreen() {
 
     if (!selectedBalance?.ticker) return
 
+    console.log('selectedBalance', selectedBalance)
+
     wallet.b_getFeeSummary(
       currentAccount.address,
       toInfo.address,

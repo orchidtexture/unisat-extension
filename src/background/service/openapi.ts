@@ -11,11 +11,13 @@ import {
   Inscription,
   InscriptionSummary,
   NetworkType,
+  SignedTransferTxn,
   TokenBalance,
   TokenTransfer,
   TxnParams,
   UTXO,
   UTXO_Detail,
+  UnsignedTransferTxn,
   VersionDetail,
   WalletConfig
 } from '@/shared/types';
@@ -362,8 +364,10 @@ export class OpenApiService {
     let nonce = await this.b_getNonce(sAddr);
     nonce += 1;
     const txn = buldTransferTxn({sAddr, rAddr, amt, tick, tokenContractAddress, nonce});
+    console.log('txn', txn)
     const fee: any = await this.b_httpPost('/sequencer_endpoint/gas_meter', txn);
     const formatedTxn = buldTransferTxn({...txn, nonce, gas_estimated: fee.gas_estimated, gas_estimated_hash: fee.gas_estimated_hash});
+    console.log('formatedTxn', formatedTxn)
     return formatedTxn
   }
 
@@ -396,12 +400,14 @@ export class OpenApiService {
     return 'enq';
   }
 
-  async b_debugBridge(): Promise<any> {
-    // const fee = await this.getFeeSummary()
-    const fee = await this.httpGet('/default/fee-summary', {});
-    const enq = await wallet.bridgeBtcToBison(BISON_ADDRESS_VAULT_BTC, 1000, fee.list[1].feeRate)
-    console.log(enq);
-    return 'enq';
+  async signBridgeBtcToBisonTxn(txId: string): Promise<any> {
+    const signedTxn = await wallet.signBridgeBtcToBisonTxn(txId)
+    return signedTxn;
+  }
+
+  async signBisonTransferTxn(params: UnsignedTransferTxn): Promise<SignedTransferTxn> {
+    const signedTxn = await wallet.signBisonTransferTxn(params)
+    return signedTxn;
   }
 
   async b_transfer(txn): Promise<any> {

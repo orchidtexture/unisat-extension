@@ -34,9 +34,11 @@ import {
   NetworkType,
   PublicKeyUserToSignInput,
   SignPsbtOptions,
+  SignedTransferTxn,
   ToSignInput,
   TxnParams,
   UTXO,
+  UnsignedTransferTxn,
   WalletKeyring
 } from '@/shared/types';
 import { checkAddressFlag } from '@/shared/utils';
@@ -975,43 +977,59 @@ export class WalletController extends BaseController {
   //   return sig;
   // }
 
-  bridgeBtcToBison =async (to: string, amount: number, feeRate: number, enableRBF = false) => {
+  signBridgeBtcToBisonTxn =async (txId: string) => {
     console.log('BRIDGE')
     const BISON_DEFAULT_TOKEN = 'btc';
-    const BISON_ADDRESS_VAULT_BTC = 'tb1p9fnmrzh5kyxxfxy7gsw08c43846vd44v4mghhlkjj0se38emywgq5myfqv';
-    const psbtHex: any = await this.sendBTC({to, amount, feeRate, enableRBF});
-
-    const psbt = bitcoin.Psbt.fromHex(psbtHex);
-    const rawtxData = psbt.extractTransaction().toHex();
-    const fee = psbt.getFee();
-
-    console.log(psbt)
-    console.log(rawtxData)
-    console.log(fee)
 
     const account = preferenceService.getCurrentAccount();
     if (!account) throw new Error('no current account');
     const nonce = await this.openapi.b_getNonce(account.address);
     const rawtx = {
-      L1txid: psbtHex.txid,
+      L1txid: txId,
       tick: BISON_DEFAULT_TOKEN,
-      sAddr: BISON_ADDRESS_VAULT_BTC,
+      sAddr: account.address,
       rAddr: account.address,
       nonce: nonce + 1,
     }
     const formatedTxn = buldPegInTxn(rawtx)
     const sig = await this.signBIP322Simple(JSON.stringify(formatedTxn));
     const signedTxn = {...formatedTxn, sig};
-    console.log(signedTxn)
     // const txnResp = await this.openapi.b_sendPegInTxn(signedTxn);
     // return txnResp;
-    return {}
+    return signedTxn
+  }
+
+  signBisonTransferTxn =async (params: UnsignedTransferTxn): Promise<SignedTransferTxn> => {
+    const account = preferenceService.getCurrentAccount();
+    if (!account || account.address !== params.senderAddress) throw new Error('no current account');
+    const nonce = await this.openapi.b_getNonce(account.address);
+    const rawTx = { // bison api format
+      method: 'transfer',
+      tick: params.tick,
+      sAddr: account.address,
+      rAddr: params.receiverAddress,
+      nonce: nonce + 1,
+      tokenContractAddress: params.tokenContractAddress,
+      amt: params.amount,
+      sig: '',
+      gas_estimated: params.gasEstimated,
+      gas_estimated_hash: params.gasEstimatedHash
+    }
+    console.log('Signing bison transfer...')
+    const sig = await this.signBIP322Simple(JSON.stringify(rawTx));
+    const signedTxn = {...rawTx, sig};
+    return signedTxn
   }
 
   enqueueTx = async (rawtx: TxnParams,): Promise<BisonTxnResponse> => {
     const sig = await this.signBIP322Simple(JSON.stringify(rawtx));
     const signedTxn = {...rawtx, sig};
     const txnResp = await this.openapi.b_enqueueTxn(signedTxn);
+    return txnResp;
+  };
+
+  enqueueTransferTxn = async (txn: SignedTransferTxn,): Promise<BisonTxnResponse> => {
+    const txnResp = await this.openapi.b_enqueueTxn(txn);
     return txnResp;
   };
 
@@ -1302,6 +1320,14 @@ export class WalletController extends BaseController {
     return openapiService.b_getFeeSummary(address, receiver, amount, tick, tokenAddress);
   };
 
+  b_signBridgeBtcToBisonTxn = async (txId: string) => {
+    return openapiService.signBridgeBtcToBisonTxn(txId);
+  };
+
+  b_signTransferTxn = async (params: UnsignedTransferTxn) => {
+    return openapiService.signBisonTransferTxn(params);
+  };
+
   inscribeBRC20Transfer = (address: string, tick: string, amount: string, feeRate: number) => {
     return openapiService.inscribeBRC20Transfer(address, tick, amount, feeRate);
   };
@@ -1369,6 +1395,7 @@ export class WalletController extends BaseController {
         return {
           ticker: toUpper(contract.tick),
           balance: balanceResponse.balance,
+          contractAddress: contract.contractAddr
         };
       } catch (error) {
         // In case of an error in a specific request, return null
@@ -1423,6 +1450,7 @@ export class WalletController extends BaseController {
         return {
           ticker: toUpper(contract.tick),
           balance: balanceResponse.balance,
+          contractAddress: contract.contractAddr
         };
       } catch (error) {
         // In case of an error in a specific request, return null

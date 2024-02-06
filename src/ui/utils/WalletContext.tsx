@@ -1,3 +1,5 @@
+import { ReactNode, createContext, useContext } from 'react';
+
 import { AccountAsset } from '@/background/controller/wallet';
 import { ContactBookItem, ContactBookStore } from '@/background/service/contactBook';
 import { ToSignInput } from '@/background/service/keyring';
@@ -10,6 +12,7 @@ import {
   AppSummary,
   Arc20Balance,
   BisonBalance,
+  BisonTxnResponse,
   BitcoinBalance,
   DecodedPsbt,
   FeeSummary,
@@ -18,19 +21,19 @@ import {
   InscriptionSummary,
   NetworkType,
   SignPsbtOptions,
+  SignedTransferTxn,
   TokenBalance,
   TokenTransfer,
   TxHistoryItem,
   UTXO,
   UTXO_Detail,
+  UnsignedTransferTxn,
   VersionDetail,
   WalletConfig,
   WalletKeyring
 } from '@/shared/types';
 import { AddressType, UnspentOutput } from '@unisat/wallet-sdk';
 import { bitcoin } from '@unisat/wallet-sdk/lib/bitcoin-core';
-import { createContext, ReactNode, useContext } from 'react';
-
 
 export interface WalletController {
   openapi: {
@@ -189,7 +192,10 @@ export interface WalletController {
 
   setAccountAlianName(account: Account, name: string): Promise<Account>;
   getFeeSummary(): Promise<FeeSummary>;
-  // getFeeSummary(address: string): Promise<any>;
+  b_getFeeSummary(address: string, receiver: string, tick: string, amount: number, tokenAddress: string): Promise<any>;
+  b_signBridgeBtcToBisonTxn(txId: string): Promise<any>;
+  b_signTransferTxn(params: UnsignedTransferTxn): Promise<SignedTransferTxn>;
+  enqueueTransferTxn(txn: SignedTransferTxn): Promise<BisonTxnResponse>
 
   setEditingKeyring(keyringIndex: number): Promise<void>;
   getEditingKeyring(): Promise<WalletKeyring>;
@@ -312,5 +318,5 @@ const useWallet = () => {
   return wallet;
 };
 
-export { useWallet, WalletProvider };
+export { WalletProvider, useWallet };
 
