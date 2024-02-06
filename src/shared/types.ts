@@ -376,6 +376,28 @@ export interface TxnParams {
     L1txid?: string;
 }
 
+export interface SignedTransferTxn {
+  method: string,
+  tick: string,
+  sAddr: string,
+  rAddr: string,
+  nonce: number,
+  tokenContractAddress: string,
+  gas_estimated: string,
+  gas_estimated_hash: string,
+  sig: string,
+}
+
+export interface UnsignedTransferTxn {
+  senderAddress: string,
+  receiverAddress: string,
+  amount: number,
+  tokenContractAddress: string,
+  tick: string
+  gasEstimated: string,
+  gasEstimatedHash: string
+}
+
 export interface BisonGetFeeResponse {
   method?: string;
   sAddr: string;

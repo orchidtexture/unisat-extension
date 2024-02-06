@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
-import { BisonTxType, DecodedPsbt, ToSignInput } from '@/shared/types';
+import { BisonTxType, DecodedPsbt, SignedTransferTxn, ToSignInput } from '@/shared/types';
 import { Button, Card, Column, Content, Footer, Header, Icon, Layout, Row, Text } from '@/ui/components';
 import { useTools } from '@/ui/components/ActionComponent';
 import { WarningPopover } from '@/ui/components/WarningPopover';
@@ -11,7 +11,14 @@ import { LoadingOutlined } from '@ant-design/icons';
 
 interface Props {
   header?: React.ReactNode;
-  txId: string;
+  txId?: string; // required in PEG IN
+  senderAddress?: string; // required in TRANSFER
+  receiverAddress?: string; // required in TRANSFER
+  amount?: number; // required in TRANSFER
+  gasEstimated?: string; // required in TRANSFER
+  gasEstimatedHash?: string; // required in TRANSFER
+  tick?: string; // required in TRANSFER
+  tokenContractAddress?: string; // required in TRANSFER
   type: BisonTxType;
   session?: {
     origin: string;
@@ -45,19 +52,8 @@ function SignTxDetails({ txId, type }: { txId: string; type: BisonTxType }) {
         <Card style={{ backgroundColor: '#272626', maxWidth: 320, width: 320 }}>
           <Column gap="lg">
             <Column>
-              {/* {rawTxInfo && (
-                <Column>
-                  <Text text={'Send to'} textCenter color="textDim" />
-                  <Row justifyCenter>
-                    <AddressText addressInfo={rawTxInfo.toAddressInfo} textCenter />
-                  </Row>
-                </Column>
-              )}
-              {rawTxInfo && <Row style={{ borderTopWidth: 1, borderColor: colors.border }} my="md" />} */}
-
               <Column>
                 <Text text={'Spend Amount'} textCenter color="textDim" />
-
                 <Column justifyCenter>
                   {/* <Text text={spendAmount} color="white" preset="bold" textCenter size="xxl" /> */}
                   {isCurrentToPayFee && <Text text={`${feeAmount} (network fee)`} preset="sub" textCenter />}
@@ -116,12 +112,26 @@ const initTxInfo: TxInfo = {
   }
 };
 
-export default function SignBIP322({ header, txId, type, session, handleCancel, handleConfirm }: Props) {
+export default function SignBIP322({
+  header,
+  txId,
+  senderAddress,
+  receiverAddress,
+  amount,
+  tick,
+  tokenContractAddress,
+  gasEstimated,
+  gasEstimatedHash,
+  type,
+  session,
+  handleCancel,
+  handleConfirm }: Props) {
   const [resolveApproval, rejectApproval] = useApproval();
 
   const [txInfo, setTxInfo] = useState<TxInfo>(initTxInfo);
 
   const [signedTxn, setSignedTxn] = useState();
+  const [signedTransferTxn, setSignedTransferTxn] = useState<SignedTransferTxn | null>(null);
 
   const wallet = useWallet();
   const [loading, setLoading] = useState(true);
@@ -133,10 +143,35 @@ export default function SignBIP322({ header, txId, type, session, handleCancel, 
   console.log(signedTxn);
 
   const init = async () => {
-    if (type === BisonTxType.PEG_IN) {
-      const signedTxn = await wallet.b_signBridgeBtcToBisonTxn(txId);
-      setSignedTxn(signedTxn);
-    } else {
+    switch (type) {
+      case BisonTxType.PEG_IN:{
+        if (!txId) throw new Error('txId is required in PEG_IN type')
+        const signedTxn = await wallet.b_signBridgeBtcToBisonTxn(txId);
+        setSignedTxn(signedTxn);
+        break;
+      }
+      case BisonTxType.TRANSFER: {
+        if (
+          !senderAddress ||
+          !receiverAddress ||
+          !amount ||
+          !gasEstimated ||
+          !gasEstimatedHash ||
+          !tick ||
+          !tokenContractAddress) {
+          throw new Error('Invalid params in TRANSFER type')
+        }
+        const signedTxn = await wallet.b_signTransferTxn({
+          senderAddress,
+          receiverAddress,
+          amount,
+          tokenContractAddress,
+          tick,
+          gasEstimated,
+          gasEstimatedHash
+        })
+        setSignedTransferTxn(signedTxn);
+      }
       // Logic for transfer
     }
     // TODO: method in wallet to retrieve signed message
@@ -194,7 +229,35 @@ export default function SignBIP322({ header, txId, type, session, handleCancel, 
   }
 
   const detailsComponent = useMemo(() => {
-    return <SignTxDetails txId={txId} type={type} />;
+    switch(type) {
+      case BisonTxType.PEG_IN:
+        if (!txId) throw Error('Invalid parameter txId')
+        return <SignTxDetails txId={txId} type={type} />;
+      case BisonTxType.TRANSFER:
+        if (
+          !senderAddress ||
+          !receiverAddress ||
+          !amount ||
+          !gasEstimated ||
+          !gasEstimatedHash ||
+          !tick ||
+          !tokenContractAddress) throw new Error('Invalid params in TRANSFER type')
+        return (
+          <>
+            <Section title='from'>
+              <Text>{senderAddress}</Text>
+            </Section>
+            <Section title='to'>
+              <Text>{receiverAddress}</Text>
+            </Section>
+            <Section title='fee'>
+              <Text>{gasEstimated}</Text>
+            </Section>
+            <Section title='token'>
+              <Text>{tick}</Text>
+            </Section>
+          </>
+        )}
   }, [txInfo]);
 
   const hasHighRisk = useMemo(() => {

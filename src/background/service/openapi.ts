@@ -11,11 +11,13 @@ import {
   Inscription,
   InscriptionSummary,
   NetworkType,
+  SignedTransferTxn,
   TokenBalance,
   TokenTransfer,
   TxnParams,
   UTXO,
   UTXO_Detail,
+  UnsignedTransferTxn,
   VersionDetail,
   WalletConfig
 } from '@/shared/types';
@@ -398,6 +400,11 @@ export class OpenApiService {
 
   async signBridgeBtcToBisonTxn(txId: string): Promise<any> {
     const signedTxn = await wallet.signBridgeBtcToBisonTxn(txId)
+    return signedTxn;
+  }
+
+  async signBisonTransferTxn(params: UnsignedTransferTxn): Promise<SignedTransferTxn> {
+    const signedTxn = await wallet.signBisonTransferTxn(params)
     return signedTxn;
   }
 

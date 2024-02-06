@@ -34,9 +34,11 @@ import {
   NetworkType,
   PublicKeyUserToSignInput,
   SignPsbtOptions,
+  SignedTransferTxn,
   ToSignInput,
   TxnParams,
   UTXO,
+  UnsignedTransferTxn,
   WalletKeyring
 } from '@/shared/types';
 import { checkAddressFlag } from '@/shared/utils';
@@ -996,6 +998,27 @@ export class WalletController extends BaseController {
     return signedTxn
   }
 
+  signBisonTransferTxn =async (params: UnsignedTransferTxn): Promise<SignedTransferTxn> => {
+    const account = preferenceService.getCurrentAccount();
+    if (!account || account.address !== params.senderAddress) throw new Error('no current account');
+    const nonce = await this.openapi.b_getNonce(account.address);
+    const rawTx = { // bison api format
+      method: 'transfer',
+      tick: params.tick,
+      sAddr: account.address,
+      rAddr: params.receiverAddress,
+      nonce: nonce + 1,
+      tokenContractAddress: params.tokenContractAddress,
+      sig: '',
+      gas_estimated: params.gasEstimated,
+      gas_estimated_hash: params.gasEstimatedHash
+    }
+    console.log('Signing bison transfer...')
+    const sig = await this.signBIP322Simple(JSON.stringify(rawTx));
+    const signedTxn = {...rawTx, sig};
+    return signedTxn
+  }
+
   enqueueTx = async (rawtx: TxnParams): Promise<BisonTxnResponse> => {
     const sig = await this.signBIP322Simple(JSON.stringify(rawtx));
     const signedTxn = {...rawtx, sig};
@@ -1292,6 +1315,10 @@ export class WalletController extends BaseController {
 
   b_signBridgeBtcToBisonTxn = async (txId: string) => {
     return openapiService.signBridgeBtcToBisonTxn(txId);
+  };
+
+  b_signTransferTxn = async (params: UnsignedTransferTxn) => {
+    return openapiService.signBisonTransferTxn(params);
   };
 
   inscribeBRC20Transfer = (address: string, tick: string, amount: string, feeRate: number) => {

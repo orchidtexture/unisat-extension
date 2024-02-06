@@ -20,11 +20,13 @@ import {
   InscriptionSummary,
   NetworkType,
   SignPsbtOptions,
+  SignedTransferTxn,
   TokenBalance,
   TokenTransfer,
   TxHistoryItem,
   UTXO,
   UTXO_Detail,
+  UnsignedTransferTxn,
   VersionDetail,
   WalletConfig,
   WalletKeyring
@@ -191,6 +193,7 @@ export interface WalletController {
   getFeeSummary(): Promise<FeeSummary>;
   b_getFeeSummary(address: string, receiver: string, tick: string, amount: number, tokenAddress: string): Promise<any>;
   b_signBridgeBtcToBisonTxn(txId: string): Promise<any>;
+  b_signTransferTxn(params: UnsignedTransferTxn): Promise<SignedTransferTxn>;
 
   setEditingKeyring(keyringIndex: number): Promise<void>;
   getEditingKeyring(): Promise<WalletKeyring>;
@@ -314,3 +317,4 @@ const useWallet = () => {
 };
 
 export { WalletProvider, useWallet };
+
