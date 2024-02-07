@@ -18,7 +18,7 @@ import { amountToSatoshis, isValidAddress, satoshisToAmount } from '@/ui/utils';
 
 import { useNavigate } from '../MainRoute';
 
-export default function BridgeBTCToBisonScreen() {
+export default function BisonPegInScreen() {
   const bisonBTCVaultAddress = 'tb1p9fnmrzh5kyxxfxy7gsw08c43846vd44v4mghhlkjj0se38emywgq5myfqv'; // TODO: handle better (not hardcoded)
   // const networkType = wallet.getNetworkType();
   const accountBalance = useAccountBalance();
@@ -64,6 +64,7 @@ export default function BridgeBTCToBisonScreen() {
   const dustAmount = useMemo(() => satoshisToAmount(COIN_DUST), [COIN_DUST]);
 
   const [feeRate, setFeeRate] = useState(5);
+  const [fee, setFee] = useState<number | undefined>(0);
 
   const [rawTxInfo, setRawTxInfo] = useState<RawTxInfo>();
 
@@ -105,6 +106,7 @@ export default function BridgeBTCToBisonScreen() {
         //   setError(`Network fee must be at leat ${data.estimateFee}`);
         //   return;
         // }
+        setFee(data.fee);
         setRawTxInfo(data);
         console.log(data);
         setDisabled(false);
@@ -121,33 +123,15 @@ export default function BridgeBTCToBisonScreen() {
   );
 
   const handleDeposit = async () => {
-    // const { success, txid, error } = await pushBitcoinTx(rawTxInfo?.rawtx as string);
     const success = true;
     if (success) {
-      navigate('BridgeToBisonCofirmScreen', {
-        txId: '35e70ec80fd8b6574345cbb8180984354c4eba3f7f3843dce03fba51552448dc'
+      navigate('BisonPegInConfirmScreen', {
+        rawtx: rawTxInfo?.rawtx as string,
+        inputAmount: amountToSatoshis(inputAmount),
+        toAddress: toInfo.address,
+        tick: 'btc',
+        fee: fee
       });
-      // try {
-      //   console.log('after nonce');
-      //   setTimeout(async () => {
-      //     try {
-      //       await fetch('https://testnet.bisonlabs.io/sequencer_endpoint/enqueue_transaction', {
-      //         method: 'POST',
-      //         headers: {
-      //           'Content-Type': 'application/json'
-      //         },
-      //         body: JSON.stringify(data)
-      //       });
-      //       navigate('TxSuccessScreen', { txId: '739b1b5d0557db85fd5668b2310aa8834bebdf6366e22b5a2c95b9424a8685ac' });
-      //     } catch (e) {
-      //       console.log('error on peg in');
-      //       tools.toastError((e as Error).message);
-      //     }
-      //   }, 100);
-      // } catch (e) {
-      //   console.log('error on nonce');
-      //   tools.toastError((e as Error).message);
-      // }
     } else {
       navigate('TxFailScreen', { error });
     }

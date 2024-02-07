@@ -6,7 +6,7 @@ import { useAppDispatch } from '@/ui/state/hooks';
 import { useAssetTabKey } from '@/ui/state/ui/hooks';
 import { AssetTabKey, uiActions } from '@/ui/state/ui/reducer';
 
-import BridgeBTCToBisonScreen from '../Wallet/BridgeBTCToBisonScreen';
+import BisonPegInScreen from '../Wallet/BisonPegInScreen';
 
 export default function BridgeTabScreen() {
   const assetTabKey = useAssetTabKey();
@@ -16,7 +16,7 @@ export default function BridgeTabScreen() {
     {
       key: AssetTabKey.BISON,
       label: 'To Bison',
-      children: <BridgeBTCToBisonScreen />
+      children: <BisonPegInScreen />
     },
     {
       key: AssetTabKey.BITCOIN,

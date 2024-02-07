@@ -46,7 +46,7 @@ import ExportPrivateKeyScreen from './Settings/ExportPrivateKeyScreen';
 import NetworkTypeScreen from './Settings/NetworkTypeScreen';
 import UpgradeNoticeScreen from './Settings/UpgradeNoticeScreen';
 import TestScreen from './Test/TestScreen';
-import BridgeToBisonConfirmScreen from './Wallet/BridgeToBisonConfirmScreen';
+import BisonPegInConfirmScreen from './Wallet/BisonPegInConfirmScreen';
 import HistoryScreen from './Wallet/HistoryScreen';
 import MoonPayScreen from './Wallet/MoonPayScreen';
 import ReceiveScreen from './Wallet/ReceiveScreen';
@@ -89,9 +89,9 @@ const routes = {
     path: '/bridge',
     element: <BridgeTabScreen />
   },
-  BridgeToBisonCofirmScreen: {
+  BisonPegInConfirmScreen: {
     path: '/bridge/confirm',
-    element: <BridgeToBisonConfirmScreen />
+    element: <BisonPegInConfirmScreen />
   },
   CreateHDWalletScreen: {
     path: '/account/create-hd-wallet',
