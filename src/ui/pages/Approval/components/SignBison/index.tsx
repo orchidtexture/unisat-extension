@@ -3,11 +3,12 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { BisonSequencerPegInMessage, BisonTxType, DecodedPsbt, SignedTransferTxn, ToSignInput } from '@/shared/types';
 import { Button, Card, Column, Content, Footer, Header, Icon, Layout, Row, Text } from '@/ui/components';
 import { useTools } from '@/ui/components/ActionComponent';
+import { CopyableAddress } from '@/ui/components/CopyableAddress';
 import { WarningPopover } from '@/ui/components/WarningPopover';
 import WebsiteBar from '@/ui/components/WebsiteBar';
 import { useNavigate } from '@/ui/pages/MainRoute';
 import { fontSizes } from '@/ui/theme/font';
-import { copyToClipboard, shortAddress, useApproval, useWallet } from '@/ui/utils';
+import { copyToClipboard, satoshisToAmount, shortAddress, useApproval, useWallet } from '@/ui/utils';
 import { LoadingOutlined } from '@ant-design/icons';
 
 interface Props {
@@ -128,14 +129,6 @@ export default function SignBIP322({
   handleCancel,
   handleConfirm
 }: Props) {
-  console.log('senderAddress', senderAddress);
-  console.log('receiverAddress', receiverAddress);
-  console.log('amount', amount);
-  console.log('tick', tick);
-  console.log('tokenContractAddress', tokenContractAddress);
-  console.log('gasEstimated', gasEstimated);
-  console.log('gasEstimatedHash', gasEstimatedHash);
-  console.log('type', type);
   const [resolveApproval, rejectApproval] = useApproval();
   const navigate = useNavigate();
   const [txInfo, setTxInfo] = useState<TxInfo>(initTxInfo);
@@ -164,15 +157,12 @@ export default function SignBIP322({
   const handleConfirmPegIn = async (txn: BisonSequencerPegInMessage) => {
     try {
       const res = await wallet.enqueuePegInTxn(txn);
-      console.log(res);
       navigate('TxSuccessScreen', { txid: res.tx_hash });
     } catch (error) {
       console.log('error sending txn', error);
       navigate('TxFailScreen', { error });
     }
   };
-
-  console.log(signedTxn);
 
   const init = async () => {
     switch (type) {
@@ -282,37 +272,47 @@ export default function SignBIP322({
           {type === BisonTxType.PEG_IN ? (
             detailsComponent
           ) : (
-            <>
-              <Section title="from">
-                <Text>{signedTransferTxn?.sAddr}</Text>
-              </Section>
-              <Section title="to">
-                <Text>{signedTransferTxn?.rAddr}</Text>
-              </Section>
-              <Section title="fee">
-                <Text>{signedTransferTxn?.gas_estimated}</Text>
-              </Section>
-              <Section title="token">
-                <Text>{signedTransferTxn?.tick}</Text>
-              </Section>
-              <Section title="amount">
-                <Text>{signedTransferTxn?.amt}</Text>
-              </Section>
-            </>
+            <Card mt="lg" style={{ display: 'block' }}>
+              <Row justifyBetween my='xl'>
+                <Text text="From" color="textDim" />
+                <CopyableAddress address={signedTransferTxn?.sAddr || ''}/>
+              </Row>
+              <Row justifyBetween my='xl'>
+                <Text text="To" color="textDim" />
+                <CopyableAddress address={signedTransferTxn?.rAddr || ''}/>
+              </Row>
+              <Row justifyBetween my='xl'>
+                <Text text="Token Contract Address" color="textDim" />
+                <CopyableAddress address={signedTransferTxn?.tokenContractAddress || ''}/>
+              </Row>
+              <Row justifyBetween my='xl'>
+                <Text text="Asset" color="textDim" />
+                <Text text={signedTransferTxn?.tick.toUpperCase()} size="sm" preset="bold" color="textDim"/>
+              </Row >
+              <Row justifyBetween my='xl'>
+                <Text text="Fee" color="textDim" />
+                <Text text={satoshisToAmount(signedTransferTxn?.gas_estimated || 0)} size="sm" preset="bold" color="textDim"/>
+              </Row>
+              <Row justifyBetween my='xl'>
+                <Text text="Amount" color="textDim" />
+                <Text text={`${satoshisToAmount(signedTransferTxn?.amt || 0)} ${signedTransferTxn?.tick.toUpperCase()}`} size="sm" preset="bold" color="textDim"/>
+              </Row >
+            </Card>
           )}
-          <Section title="PSBT Data:">
-            <Text text={shortAddress(txInfo.psbtHex, 10)} />
-            <Row
-              itemsCenter
-              onClick={(e) => {
-                copyToClipboard(txInfo.psbtHex).then(() => {
-                  tools.toastSuccess('Copied');
-                });
-              }}>
-              <Text text={`${txInfo.psbtHex.length / 2} bytes`} color="textDim" />
-              <Icon icon="copy" color="textDim" />
-            </Row>
-          </Section>
+          {type === BisonTxType.PEG_IN ? (
+            <Section title="PSBT Data:">
+              <Text text={shortAddress(txInfo.psbtHex, 10)} />
+              <Row
+                itemsCenter
+                onClick={(e) => {
+                  copyToClipboard(txInfo.psbtHex).then(() => {
+                    tools.toastSuccess('Copied');
+                  });
+                }}>
+                <Text text={`${txInfo.psbtHex.length / 2} bytes`} color="textDim" />
+                <Icon icon="copy" color="textDim" />
+              </Row>
+            </Section>) : null}
         </Column>
       </Content>
 

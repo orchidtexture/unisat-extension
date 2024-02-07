@@ -22,6 +22,7 @@ export default function TxBisonConfirmScreen() {
         onBack={() => {
           window.history.go(-1);
         }}
+        title='Confirm transaction'
       />}
       senderAddress={rawTx.sAddr}
       receiverAddress={rawTx.rAddr}

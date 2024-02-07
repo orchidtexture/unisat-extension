@@ -8,6 +8,7 @@ import { useCurrentAccount } from '@/ui/state/accounts/hooks';
 import { useBitcoinTx, useFetchUtxosCallback } from '@/ui/state/transactions/hooks';
 import { colors } from '@/ui/theme/colors';
 import { amountToSatoshis, isValidAddress, satoshisToAmount } from '@/ui/utils';
+import { LoadingOutlined } from '@ant-design/icons';
 import { Select } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -19,6 +20,7 @@ export default function TxBisonCreateScreen() {
   const navigate = useNavigate();
   const [error, setError] = useState('');
   const [autoAdjust, setAutoAdjust] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [disabled, setDisabled] = useState(false);
   const [rawTx, setRawTx] = useState<BisonGetFeeResponse | null>(null)
   const bitcoinTx = useBitcoinTx();
@@ -43,7 +45,7 @@ export default function TxBisonCreateScreen() {
   useEffect(() => {
     wallet.getBisonContractBalances(currentAccount.address)
       .then(setBalances);
-  }, [currentAccount]);
+  }, [currentAccount, selectedBalance]);
 
 
   useEffect(() => {
@@ -54,27 +56,34 @@ export default function TxBisonCreateScreen() {
   }, []);
 
   useEffect(() => {
+    setLoading(true)
     setError('');
     setDisabled(true);
 
     if (!isValidAddress(toInfo.address)) {
+      setLoading(false)
       return;
     }
     if (!toSatoshis) {
+      setLoading(false)
       return;
     }
     if (toSatoshis < COIN_DUST) {
       setError(`Amount must be at least ${dustAmount} BTC`);
+      setLoading(false)
       return;
     }
 
     if (toSatoshis > (selectedBalance?.balance || 0)) {
       setError('Amount exceeds your available balance');
+      setLoading(false)
       return;
     }
 
-    if (!selectedBalance?.ticker) return
-
+    if (!selectedBalance?.ticker) {
+      setLoading(false)
+      return
+    }
     console.log('selectedBalance', selectedBalance)
 
     wallet.b_getFeeSummary(
@@ -84,8 +93,11 @@ export default function TxBisonCreateScreen() {
       amountToSatoshis(inputAmount),
       selectedBalance?.contractAddress
     ).then(setRawTx)
-      .then(() => setDisabled(false))
-  }, [toInfo, inputAmount]);
+      .then(() => {
+        setDisabled(false)
+        setLoading(false)
+      })
+  }, [toInfo, inputAmount, selectedBalance]);
 
 
   const handleContractChange = (ticker: string) => {
@@ -112,7 +124,7 @@ export default function TxBisonCreateScreen() {
           options={balances.map((balance, index) => ({
             key: balance.ticker + index,
             value: balance.ticker,
-            label: balance.ticker
+            label: balance.ticker.toUpperCase()
           }))}
         />
       </Row>
@@ -137,7 +149,7 @@ export default function TxBisonCreateScreen() {
               setAutoAdjust(true);
             }}>
             <Text text="MAX" preset="sub" style={{ color: autoAdjust ? colors.yellow_light : colors.white_muted }} />
-            <Text text={`${satoshisToAmount(selectedBalance?.balance || 0)} ${selectedBalance?.ticker || ''}`} preset="bold" size="sm" />
+            <Text text={`${satoshisToAmount(selectedBalance?.balance || 0)} ${selectedBalance?.ticker.toUpperCase() || ''}`} preset="bold" size="sm" />
           </Row>
         </Row>
         <Input
@@ -159,10 +171,12 @@ export default function TxBisonCreateScreen() {
       <Button
         disabled={disabled}
         preset="primary"
-        text="Next"
+        text={loading ? '' : 'Next'}
         onClick={() => {
           navigate('TxBisonConfirmScreen', { rawTx });
-        }}></Button>
+        }}>
+        {loading ? <LoadingOutlined /> : null}
+      </Button>
     </Content>
   );
 }
