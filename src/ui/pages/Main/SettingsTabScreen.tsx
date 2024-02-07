@@ -53,14 +53,15 @@ const SettingList: Setting[] = [
     route: '/connected-sites',
     right: true
   },
-  {
-    label: 'Network',
-    value: 'MAINNET',
-    desc: '',
-    action: 'networkType',
-    route: '/settings/network-type',
-    right: true
-  },
+  // TODO: re-enable when mainnet is available
+  // {
+  //   label: 'Network',
+  //   value: 'MAINNET',
+  //   desc: '',
+  //   action: 'networkType',
+  //   route: '/settings/network-type',
+  //   right: true
+  // },
 
   {
     label: 'Change Password',
