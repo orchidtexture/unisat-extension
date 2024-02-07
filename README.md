@@ -1,6 +1,6 @@
 # Kondor Wallet
 
-Kondor Wallet - Based on Unisat Wallet, the first open-source browser extension wallet for Ordinals on bitcoin.
+Kondor Wallet - The first ZK-Rollup focused browser extension wallet for Bison Network and Bitcoin.
 
 - Website: https://kondor.finance/
 - Twitter: https://twitter.com/KondorFinance
@@ -16,4 +16,4 @@ Kondor Wallet - Based on Unisat Wallet, the first open-source browser extension 
 
 ## Special Thanks
 
-Thanks to the Unisat team for their contributions to the Bitcoin wallet community and thanks to the MetaMask team for their contributions to the browser extension wallet community, Kondor Wallet relies heavily on their contributions.
+Thanks to the UniSat team for their contributions to the Bitcoin wallet community and thanks to the MetaMask team for their contributions to the browser extension wallet community, Kondor Wallet relies heavily on their contributions.
