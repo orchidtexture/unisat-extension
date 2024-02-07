@@ -92,10 +92,12 @@ export class OpenApiService {
     this.store = await createPersistStore({
       name: 'openapi',
       template: {
-        host: OPENAPI_URL_MAINNET,
+        host: OPENAPI_URL_TESTNET,
         deviceId: randomstring.generate(12)
       }
     });
+
+    console.log(this.store.host)
 
     if (![OPENAPI_URL_MAINNET, OPENAPI_URL_TESTNET].includes(this.store.host)) {
       const networkType = preferenceService.getNetworkType();
