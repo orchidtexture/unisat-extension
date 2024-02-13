@@ -1,9 +1,9 @@
 import { ethErrors } from 'eth-rpc-errors';
-import { KondorProvider } from './index';
+import { ZkyProvider } from './index';
 
 
 class PushEventHandlers {
-  provider: KondorProvider;
+  provider: ZkyProvider;
 
   constructor(provider) {
     this.provider = provider;
