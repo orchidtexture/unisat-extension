@@ -36,7 +36,7 @@ function injectScript() {
       pm.dispose();
     });
   } catch (error) {
-    console.error('Kondor: Provider injection failed.', error);
+    console.error('ZKy: Provider injection failed.', error);
   }
 }
 

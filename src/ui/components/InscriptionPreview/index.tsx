@@ -129,7 +129,7 @@ export default function InscriptionPreview({ data, onClick, preset }: Inscriptio
         </Column>
       </div>
       <Column px="md" py="sm" gap="zero" bg="bg4" full>
-        <Text text={numberStr} color="kondor_primary" size={$numberPresets[preset] as any} />
+        <Text text={numberStr} color="zky_primary" size={$numberPresets[preset] as any} />
         {isUnconfirmed == false && <Text text={time} preset="sub" size={$timePresets[preset] as any} />}
       </Column>
     </Column>

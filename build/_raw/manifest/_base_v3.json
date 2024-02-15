@@ -23,7 +23,7 @@
     "default_title": "__MSG_appName__"
   },
 
-  "author": "https://kondor.finance",
+  "author": "https://zkywallet.com",
   "background": {
     "service_worker": "background.js"
   },

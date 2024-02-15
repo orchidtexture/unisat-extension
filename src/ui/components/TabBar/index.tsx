@@ -57,7 +57,7 @@ export function TabBar(props: TabBarProps) {
                 { width: 20, height: 20 },
                 reach
                   ? {
-                      backgroundColor: colors.kondor_primary
+                      backgroundColor: colors.zky_primary
                     }
                   : {
                       backgroundColor: colors.bg2
@@ -100,7 +100,7 @@ export function TabBar(props: TabBarProps) {
                   text={v.label}
                   size={'md'}
                   preset={isSelected ? 'bold' : 'regular'}
-                  color={isSelected ? 'kondor_primary' : 'white'}
+                  color={isSelected ? 'zky_primary' : 'white'}
                 />
               </Column>
             );
@@ -128,11 +128,11 @@ export function TabBar(props: TabBarProps) {
               <Column
                 key={v.key}
                 style={{ borderWidth: 1, borderRadius: 20, backgroundColor: '#322D1F' }}
-                color={isSelected ? 'kondor_primary' : 'white_muted'}
+                color={isSelected ? 'zky_primary' : 'white_muted'}
                 onClick={() => {
                   setTabKey(v.key);
                 }}>
-                <Text text={v.label} size="xs" color={isSelected ? 'kondor_primary' : 'white_muted'} mx="md" my="sm" />
+                <Text text={v.label} size="xs" color={isSelected ? 'zky_primary' : 'white_muted'} mx="md" my="sm" />
               </Column>
             );
           }
@@ -158,7 +158,7 @@ export function TabBar(props: TabBarProps) {
               onClick={() => {
                 setTabKey(v.key);
               }}>
-              <Text text={v.label} color={isSelected ? 'kondor_primary' : 'white'} />
+              <Text text={v.label} color={isSelected ? 'zky_primary' : 'white'} />
             </Column>
           );
         }

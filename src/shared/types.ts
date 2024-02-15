@@ -15,7 +15,7 @@ export enum NetworkType {
 }
 
 export enum RestoreWalletType {
-  KONDOR,
+  ZKY,
   UNISAT,
   SPARROW,
   XVERSE,

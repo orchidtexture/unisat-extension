@@ -17,7 +17,7 @@ const log = (event, ...args) => {
   }
 };
 const script = document.currentScript;
-const channelName = script?.getAttribute('channel') || 'KONDOR';
+const channelName = script?.getAttribute('channel') || 'ZKY';
 
 export interface Interceptor {
   onRequest?: (data: any) => any;

@@ -166,8 +166,8 @@ export const OW_HD_PATH = "m/86'/0'/0'";
 
 export const RESTORE_WALLETS: { value: RestoreWalletType; name: string; addressTypes: AddressType[] }[] = [
   {
-    value: RestoreWalletType.KONDOR,
-    name: 'Kondor Wallet',
+    value: RestoreWalletType.ZKY,
+    name: 'ZKy Wallet',
     addressTypes: [
       AddressType.P2WPKH,
       AddressType.P2SH_P2WPKH,
@@ -287,7 +287,7 @@ export const SAFE_DOMAIN_CONFIRMATION = 3;
 
 export const GITHUB_URL = 'https://github.com/KondorFinance';
 // export const DISCORD_URL = 'https://discord.com/invite/EMskB2sMz8';
-export const TWITTER_URL = 'https://twitter.com/KondorFinance';
+export const TWITTER_URL = 'https://twitter.com/zkywallet';
 
 export const CHANNEL = process.env.channel!;
 export const VERSION = process.env.release!;

@@ -11,14 +11,14 @@ export function Logo(props: { preset?: 'large' | 'small' }) {
       <Row justifyCenter itemsCenter>
         <Image src="./images/logo/wallet-logo.png" size={fontSizes.xxxl} />
 
-        <Text text="Kondor" preset="title-bold" size="xxl" disableTranslate />
+        <Text text="Zky Wallet" preset="title-bold" size="xxl" disableTranslate />
       </Row>
     );
   } else {
     return (
       <Row justifyCenter itemsCenter>
         <Image src="./images/logo/wallet-logo.png" size={fontSizes.xxl} />
-        <Text text="Kondor" preset="title-bold" disableTranslate />
+        <Text text="Zky Wallet" preset="title-bold" disableTranslate />
       </Row>
     );
   }

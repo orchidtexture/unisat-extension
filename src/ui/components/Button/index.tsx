@@ -77,7 +77,7 @@ const $viewPresets = {
   }) as CSSProperties,
 
   primary: Object.assign({}, $baseViewStyle, {
-    backgroundColor: colors.kondor_primary,
+    backgroundColor: colors.zky_primary,
     height: '40px'
   } as CSSProperties),
 

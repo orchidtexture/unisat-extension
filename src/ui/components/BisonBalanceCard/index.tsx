@@ -3,9 +3,9 @@ import { Tooltip } from 'antd';
 import { BisonBalance } from '@/shared/types';
 import { colors } from '@/ui/theme/colors';
 import { fontSizes } from '@/ui/theme/font';
+import { satoshisToAmount } from '@/ui/utils';
 import { InfoCircleOutlined } from '@ant-design/icons';
 
-import { satoshisToAmount } from '@/ui/utils';
 import { Card } from '../Card';
 import { Column } from '../Column';
 import { Row } from '../Row';
@@ -33,7 +33,7 @@ export default function BisonBalanceCard(props: BisonBalanceCardProps) {
       onClick={onClick}>
       <Column full>
         <Row justifyBetween itemsCenter>
-          <Text text={ticker} color="kondor_primary" />
+          <Text text={ticker} color="zky_primary" />
           <Tooltip
             title="The transferable amount is the balance that has been inscribed into transfer inscriptions but has not yet been sent."
             overlayStyle={{
