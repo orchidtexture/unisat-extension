@@ -30,6 +30,7 @@ import AppTabScrren from './Main/AppTabScreen';
 import BoostScreen from './Main/BoostScreen';
 import BridgeTabScreen from './Main/BridgeTabScreen';
 import DiscoverTabScreen from './Main/DiscoverTabScreen';
+import FaqTabScreen from './Main/FaqTabScreen';
 import SettingsTabScreen from './Main/SettingsTabScreen';
 import WalletTabScreen from './Main/WalletTabScreen';
 import WelcomeScreen from './Main/WelcomeScreen';
@@ -76,6 +77,10 @@ const routes = {
   DiscoverTabScreen: {
     path: '/discover',
     element: <DiscoverTabScreen />
+  },
+  FaqTabScreen: {
+    path: '/faq',
+    element: <FaqTabScreen />
   },
   AppTabScrren: {
     path: '/app',
