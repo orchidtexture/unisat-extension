@@ -28,7 +28,7 @@ export default function BisonBalanceCard(props: BisonBalanceCardProps) {
       onClick={onClick}>
       <Column full>
         <Row justifyBetween itemsCenter>
-          <Text text={ticker} color="kondor_primary" />
+          <Text text={ticker} color="zky_primary" />
           <Text text={satoshisToAmount(balance)} size="xs" />
         </Row>
       </Column>
