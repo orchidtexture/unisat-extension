@@ -175,14 +175,15 @@ export class KondorProvider extends EventEmitter {
     });
   };
 
-  switchNetwork = async (network: string) => {
-    return this._request({
-      method: 'switchNetwork',
-      params: {
-        network
-      }
-    });
-  };
+  // TODO: Re-enable when mainnet is available
+  // switchNetwork = async (network: string) => {
+  //   return this._request({
+  //     method: 'switchNetwork',
+  //     params: {
+  //       network
+  //     }
+  //   });
+  // };
 
   getAccounts = async () => {
     return this._request({

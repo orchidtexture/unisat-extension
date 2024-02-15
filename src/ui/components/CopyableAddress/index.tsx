@@ -1,9 +1,9 @@
 import { copyToClipboard, shortAddress } from '@/ui/utils';
-
+import { CopyOutlined } from '@ant-design/icons';
 import { useTools } from '../ActionComponent';
-import { Icon } from '../Icon';
 import { Row } from '../Row';
 import { Text } from '../Text';
+
 
 export function CopyableAddress({ address }: { address: string }) {
   const tools = useTools();
@@ -16,8 +16,8 @@ export function CopyableAddress({ address }: { address: string }) {
           tools.toastSuccess('Copied');
         });
       }}>
-      <Icon icon="copy" color="textDim" />
       <Text text={shortAddress(address)} color="textDim" />
+      <CopyOutlined style={{color:'#888',fontSize:14}}/>
     </Row>
   );
 }

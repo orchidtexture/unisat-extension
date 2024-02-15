@@ -1,4 +1,4 @@
-import { Content, Header, Layout, Column, Button, TextArea } from '@/ui/components';
+import { Button, Column, Content, Header, Layout, TextArea } from '@/ui/components';
 import { useCurrentAccount } from '@/ui/state/accounts/hooks';
 import { fontSizes } from '@/ui/theme/font';
 import { useWallet } from '@/ui/utils';
@@ -7,7 +7,7 @@ const disclaimStr = `    By clicking the payment button, you will be redirected 
 
     Please note that credit card payment services are provided by MoonPay.
 
-    UniSat Wallet acts solely as a facilitator and does not assume any responsibility for potential losses or damages arising from the use of the credit card payment service.
+    Kondor Wallet acts solely as a facilitator and does not assume any responsibility for potential losses or damages arising from the use of the credit card payment service.
 
     Kindly take a moment to review and accept this disclaimer before proceeding further.`;
 export default function MoonPayScreen() {

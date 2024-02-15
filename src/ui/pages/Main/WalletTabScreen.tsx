@@ -546,9 +546,6 @@ function BisonList() {
           <BisonBalanceCard
             key={index}
             bisonBalance={data}
-            onClick={() => {
-              navigate('BRC20TokenScreen', { tokenBalance: data, ticker: data.ticker });
-            }}
           />
         ))}
       </Row>

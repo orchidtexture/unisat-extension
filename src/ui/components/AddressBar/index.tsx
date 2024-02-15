@@ -1,11 +1,10 @@
 import { useAccountAddress } from '@/ui/state/accounts/hooks';
 import { copyToClipboard, shortAddress } from '@/ui/utils';
 
+import { CopyOutlined } from '@ant-design/icons';
 import { useTools } from '../ActionComponent';
-import { Icon } from '../Icon';
 import { Row } from '../Row';
 import { Text } from '../Text';
-import { CopyOutlined } from '@ant-design/icons';
 
 export function AddressBar() {
   const tools = useTools();
