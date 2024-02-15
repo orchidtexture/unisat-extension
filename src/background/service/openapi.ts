@@ -322,9 +322,12 @@ export class OpenApiService {
   }
 
   async getInscriptionUtxoDetail(inscriptionId: string): Promise<UTXO_Detail> {
-    return this.httpGet('/inscription/utxo-detail', {
+    console.log('DETAIL')
+    const ins: any = this.httpGet('/inscription/utxo-detail', {
       inscriptionId
     });
+    console.log(ins)
+    return ins
   }
 
   async getInscriptionUtxos(inscriptionIds: string[]): Promise<UTXO[]> {

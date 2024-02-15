@@ -1332,7 +1332,14 @@ export class WalletController extends BaseController {
   };
 
   b_getInscriptionList = async (address: string) => {
-    return openapiService.b_getInscrptionList(address);
+    const inscriptions = await openapiService.b_getInscrptionList(address);
+    const arrayInscription = inscriptions.map(inscription => {
+      const inscriptionDetails: any = openapiService.getInscriptionUtxoDetail(inscription.inscription);
+      return inscriptionDetails;
+    });
+    console.log('MAPPING INSC RESULTS')
+    const inscriptionsList = await Promise.all(arrayInscription);
+    return inscriptionsList
   };
 
   b_signBridgeBtcToBisonTxn = async (txId: string) => {
@@ -1633,6 +1640,14 @@ export class WalletController extends BaseController {
     const size = pageSize;
 
     const { total, list } = await openapiService.getOrdinalsInscriptions(address, cursor, size);
+    const arrayInscription = list.map(inscription => {
+      const inscriptionDetails: any = openapiService.getInscriptionUtxoDetail(inscription.inscriptionId);
+      return inscriptionDetails;
+    });
+    console.log('MAPPING INSC RESULTS')
+    const results = await Promise.all(arrayInscription);
+    console.log(results)
+    console.log('--------')
     return {
       currentPage,
       pageSize,
