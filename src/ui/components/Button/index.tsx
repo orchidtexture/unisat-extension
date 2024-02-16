@@ -101,7 +101,7 @@ const $hoverViewPresets: Record<Presets, CSSProperties> = {
     backgroundColor: '#2E444E'
   },
   primary: {
-    backgroundColor: colors.yellow_dark
+    backgroundColor: colors.green_dark
   },
   danger: {
     backgroundColor: colors.red_dark
