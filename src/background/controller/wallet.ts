@@ -1338,8 +1338,9 @@ export class WalletController extends BaseController {
       return inscriptionDetails;
     });
     console.log('MAPPING INSC RESULTS')
-    const inscriptionsList = await Promise.all(arrayInscription);
-    return inscriptionsList
+    const inscriptionsDetails = await Promise.all(arrayInscription);
+    const inscriptionsList = inscriptionsDetails.map(item => item.inscriptions[0]);
+    return { list: inscriptionsList }
   };
 
   b_signBridgeBtcToBisonTxn = async (txId: string) => {
