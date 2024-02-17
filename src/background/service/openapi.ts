@@ -14,11 +14,8 @@ import {
   SignedTransferTxn,
   TokenBalance,
   TokenTransfer,
-  TxnParams,
-  UTXO,
-  UTXO_Detail,
-  UnsignedTransferTxn,
-  VersionDetail,
+  TxnParams, UnsignedTransferTxn, UTXO,
+  UTXO_Detail, VersionDetail,
   WalletConfig
 } from '@/shared/types';
 import randomstring from 'randomstring';
@@ -57,6 +54,23 @@ export const buldTransferTxn = (txnInput: TxnParams) => {
   if (txnInput.gas_estimated && txnInput.gas_estimated_hash) {
     txn.gas_estimated = txnInput.gas_estimated
     txn.gas_estimated_hash = txnInput.gas_estimated_hash
+  };
+  return txn;
+}
+
+export const buldTransferInscriptionTxn = (txnInput: TxnParams) => {
+  const txn: any = {
+    method: 'inscription_transfer',
+    sAddr: txnInput.sAddr,
+    rAddr: txnInput.rAddr,
+    amt: txnInput.amt,
+    inscription: txnInput.inscriptionId,
+    tick: 'inscription',
+    nonce: txnInput.nonce,
+    tokenContractAddress: txnInput.tokenContractAddress,
+    sig: txnInput.sig || '',
+    gas_estimated: txnInput.gas_estimated,
+    gas_estimated_hash: txnInput.gas_estimated_hash
   };
   return txn;
 }
@@ -308,9 +322,12 @@ export class OpenApiService {
   }
 
   async getInscriptionUtxoDetail(inscriptionId: string): Promise<UTXO_Detail> {
-    return this.httpGet('/inscription/utxo-detail', {
+    console.log('DETAIL')
+    const ins: any = this.httpGet('/inscription/utxo-detail', {
       inscriptionId
     });
+    console.log(ins)
+    return ins
   }
 
   async getInscriptionUtxos(inscriptionIds: string[]): Promise<UTXO[]> {
@@ -373,6 +390,10 @@ export class OpenApiService {
     return formatedTxn
   }
 
+  async b_getInscrptionList(address): Promise<any> {
+    const inscrioptions: any = this.b_httpPost('/inscription_endpoint/inscriptions', { address });
+    return inscrioptions;
+  }
 
   async b_enqueueTxn(txn): Promise<any> {
     const formatedTxn = buldTransferTxn(txn);
