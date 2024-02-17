@@ -10,7 +10,9 @@ import {
 import i18n from '@/background/service/i18n';
 import { DisplayedKeyring, Keyring } from '@/background/service/keyring';
 import {
-  AddressFlagType, ADDRESS_TYPES, BISONAPI_URL_TESTNET,
+  ADDRESS_TYPES,
+  AddressFlagType,
+  BISONAPI_URL_TESTNET,
   BRAND_ALIAN_TYPE_TEXT,
   CHAINS_ENUM,
   COIN_NAME,
@@ -31,19 +33,25 @@ import {
   BitcoinBalance,
   ContractBison,
   NetworkType,
-  PublicKeyUserToSignInput, SignedTransferTxn, SignPsbtOptions, ToSignInput,
-  TxnParams, UnsignedTransferTxn, UTXO, WalletKeyring
+  PublicKeyUserToSignInput,
+  SignPsbtOptions,
+  SignedTransferTxn,
+  ToSignInput,
+  TxnParams,
+  UTXO,
+  UnsignedTransferTxn,
+  WalletKeyring
 } from '@/shared/types';
 import { checkAddressFlag } from '@/shared/utils';
-import { txHelpers, UnspentOutput } from '@unisat/wallet-sdk';
+import { UnspentOutput, txHelpers } from '@unisat/wallet-sdk';
 import { publicKeyToAddress, scriptPkToAddress } from '@unisat/wallet-sdk/lib/address';
-import { bitcoin, ECPair } from '@unisat/wallet-sdk/lib/bitcoin-core';
+import { ECPair, bitcoin } from '@unisat/wallet-sdk/lib/bitcoin-core';
 import { signMessageOfBIP322Simple } from '@unisat/wallet-sdk/lib/message';
 import { toPsbtNetwork } from '@unisat/wallet-sdk/lib/network';
 import { toXOnly } from '@unisat/wallet-sdk/lib/utils';
 import { toUpper } from 'lodash';
 import { ContactBookItem } from '../service/contactBook';
-import { buldPegInTxn, buldTransferTxn, OpenApiService } from '../service/openapi';
+import { OpenApiService, buldPegInTxn, buldTransferTxn } from '../service/openapi';
 import { ConnectedSite } from '../service/permission';
 import BaseController from './base';
 

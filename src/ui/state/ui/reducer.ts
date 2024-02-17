@@ -18,6 +18,7 @@ export enum AssetTabKey {
 
 export enum BisonAssetTabKey {
   ALL,
+  INSCRIPTIONS
 }
 
 export enum OrdinalsAssetTabKey {

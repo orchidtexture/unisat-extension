@@ -196,6 +196,9 @@ export interface WalletController {
   b_getFeeSummary(address: string, receiver: string, tick: string, amount: number, tokenAddress: string): Promise<any>;
   b_signBridgeBtcToBisonTxn(txId: string): Promise<any>;
   b_signTransferTxn(params: UnsignedTransferTxn): Promise<SignedTransferTxn>;
+  b_getInscriptionList(
+    address: string,
+  ): Promise<{list: Inscription[] }>;
   enqueuePegInTxn(txn: BisonSequencerPegInMessage): Promise<BisonTxnResponse>;
   enqueueTransferTxn(txn: SignedTransferTxn): Promise<BisonTxnResponse>;
 
@@ -321,3 +324,4 @@ const useWallet = () => {
 };
 
 export { WalletProvider, useWallet };
+
