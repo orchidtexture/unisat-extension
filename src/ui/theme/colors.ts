@@ -1,7 +1,7 @@
 // TODO: write documentation for colors and palette in own markdown file and add links from here
 
 const palette = {
-  kondor_primary: '#6fee8d',
+  zky_primary: '#6fee8d',
   white: '#ffffff',
   white_muted: '#AFAFAF',
   black: '#000000',
@@ -52,7 +52,7 @@ export const colors = Object.assign({}, palette, {
 
   card: '#10171A',
   warning: palette.orange,
-  primary: palette.kondor_primary,
+  primary: palette.zky_primary,
 
   bg2: '#10171A',
   bg3: '#434242',

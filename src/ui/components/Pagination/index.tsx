@@ -99,7 +99,7 @@ export const Pagination = (props: PaginationProps) => {
             text={v.label}
             style={{ width: 18 }}
             textCenter
-            color={pagination.currentPage == v.page ? 'kondor_primary' : 'white'}
+            color={pagination.currentPage == v.page ? 'zky_primary' : 'white'}
             onClick={
               v.page == -1
                 ? undefined

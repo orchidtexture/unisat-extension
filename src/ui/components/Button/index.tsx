@@ -77,7 +77,7 @@ const $viewPresets = {
   }) as CSSProperties,
 
   primary: Object.assign({}, $baseViewStyle, {
-    backgroundColor: colors.kondor_primary,
+    backgroundColor: colors.zky_primary,
     height: '40px'
   } as CSSProperties),
 
@@ -101,7 +101,7 @@ const $hoverViewPresets: Record<Presets, CSSProperties> = {
     backgroundColor: '#2E444E'
   },
   primary: {
-    backgroundColor: colors.yellow_dark
+    backgroundColor: colors.green_dark
   },
   danger: {
     backgroundColor: colors.red_dark

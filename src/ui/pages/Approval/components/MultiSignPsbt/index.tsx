@@ -286,7 +286,7 @@ export default function MultiSignPsbt({
     return (
       <Layout>
         <Content itemsCenter justifyCenter>
-          <Icon size={fontSizes.xxxl} color="kondor_primary">
+          <Icon size={fontSizes.xxxl} color="zky_primary">
             <LoadingOutlined />
           </Icon>
         </Content>
@@ -313,13 +313,13 @@ export default function MultiSignPsbt({
           <Column>
             <Text text="Phishing Detection" preset="title-bold" textCenter mt="xxl" />
             <Text text="Malicious behavior and suspicious activity have been detected." mt="md" />
-            <Text text="Your access to this page has been restricted by Kondor Wallet as it might be unsafe." mt="md" />
+            <Text text="Your access to this page has been restricted by ZKy Wallet as it might be unsafe." mt="md" />
           </Column>
         </Content>
 
         <Footer>
           <Row full>
-            <Button text="Reject (blocked by Kondor Wallet)" preset="danger" onClick={handleCancel} full />
+            <Button text="Reject (blocked by ZKy Wallet)" preset="danger" onClick={handleCancel} full />
           </Row>
         </Footer>
       </Layout>
@@ -377,11 +377,11 @@ export default function MultiSignPsbt({
                                 <Row
                                   style={{
                                     borderWidth: 1,
-                                    borderColor: 'kondor_primary',
+                                    borderColor: 'zky_primary',
                                     borderRadius: 5,
                                     padding: 2
                                   }}>
-                                  <Text text="to sign" color="kondor_primary" size="xs" />
+                                  <Text text="to sign" color="zky_primary" size="xs" />
                                 </Row>
                               )}
                             </Row>

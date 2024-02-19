@@ -91,7 +91,7 @@ export default function Connect({ params: { session } }: Props) {
     return (
       <Layout>
         <Content itemsCenter justifyCenter>
-          <Icon size={fontSizes.xxxl} color="kondor_primary">
+          <Icon size={fontSizes.xxxl} color="zky_primary">
             <LoadingOutlined />
           </Icon>
         </Content>
@@ -109,13 +109,13 @@ export default function Connect({ params: { session } }: Props) {
           <Column>
             <Text text="Phishing Detection" preset="title-bold" textCenter mt="xxl" />
             <Text text="Malicious behavior and suspicious activity have been detected." mt="md" />
-            <Text text="Your access to this page has been restricted by Kondor Wallet as it might be unsafe." mt="md" />
+            <Text text="Your access to this page has been restricted by ZKy Wallet as it might be unsafe." mt="md" />
           </Column>
         </Content>
 
         <Footer>
           <Row full>
-            <Button text="Reject (blocked by Kondor Wallet)" preset="danger" onClick={handleCancel} full />
+            <Button text="Reject (blocked by ZKy Wallet)" preset="danger" onClick={handleCancel} full />
           </Row>
         </Footer>
       </Layout>
@@ -157,7 +157,7 @@ export default function Connect({ params: { session } }: Props) {
       </Header>
       <Content>
         <Column>
-          <Text text="Connect with Kondor Wallet" preset="title-bold" textCenter mt="lg" />
+          <Text text="Connect with ZKy Wallet" preset="title-bold" textCenter mt="lg" />
           <Text text="Select the account to use on this site" textCenter mt="md" />
           <Text text="Only connect with sites you trust." preset="sub" textCenter mt="md" />
 

@@ -10,14 +10,14 @@ import { $, domReadyCall } from './utils';
 const log = (event, ...args) => {
   if (process.env.NODE_ENV !== 'production') {
     // console.log(
-    //   `%c [kondor] (${new Date().toTimeString().slice(0, 8)}) ${event}`,
+    //   `%c [zky] (${new Date().toTimeString().slice(0, 8)}) ${event}`,
     //   'font-weight: 600; background-color: #7d6ef9; color: white;',
     //   ...args
     // );
   }
 };
 const script = document.currentScript;
-const channelName = script?.getAttribute('channel') || 'KONDOR';
+const channelName = script?.getAttribute('channel') || 'ZKY';
 
 export interface Interceptor {
   onRequest?: (data: any) => any;
@@ -32,7 +32,7 @@ interface StateProvider {
   isPermanentlyDisconnected: boolean;
 }
 const EXTENSION_CONTEXT_INVALIDATED_CHROMIUM_ERROR = 'Extension context invalidated.';
-export class KondorProvider extends EventEmitter {
+export class ZkyProvider extends EventEmitter {
   _selectedAddress: string | null = null;
   _network: string | null = null;
   _isConnected = false;
@@ -323,23 +323,23 @@ export class KondorProvider extends EventEmitter {
 
 declare global {
   interface Window {
-    kondor: KondorProvider;
+    zky: ZkyProvider;
   }
 }
 
-const provider = new KondorProvider();
+const provider = new ZkyProvider();
 
-if (!window.kondor) {
-  window.kondor = new Proxy(provider, {
+if (!window.zky) {
+  window.zky = new Proxy(provider, {
     deleteProperty: () => true
   });
 }
 
-Object.defineProperty(window, 'kondor', {
+Object.defineProperty(window, 'zky', {
   value: new Proxy(provider, {
     deleteProperty: () => true
   }),
   writable: false
 });
 
-window.dispatchEvent(new Event('kondor#initialized'));
+window.dispatchEvent(new Event('zky#initialized'));

@@ -372,7 +372,7 @@ function InscribeConfirmStep({ contextData, updateContextData }: StepProps) {
                 text={`${amount} ${tokenBalance.ticker}`}
                 preset="title-bold"
                 size="xxl"
-                color="kondor_primary"
+                color="zky_primary"
                 textCenter
               />
 
@@ -419,8 +419,8 @@ function InscribeConfirmStep({ contextData, updateContextData }: StepProps) {
                 )}
               </Row>
               <Row justifyBetween>
-                <Text text="Total" color="kondor_primary" />
-                <Text text={`${totalFee} BTC`} color="kondor_primary" />
+                <Text text="Total" color="zky_primary" />
+                <Text text={`${totalFee} BTC`} color="zky_primary" />
               </Row>
             </Column>
           </Column>

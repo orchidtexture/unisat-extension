@@ -253,7 +253,7 @@ export default function SignBIP322({
     return (
       <Layout>
         <Content itemsCenter justifyCenter>
-          <Icon size={fontSizes.xxxl} color="kondor_primary">
+          <Icon size={fontSizes.xxxl} color="zky_primary">
             <LoadingOutlined />
           </Icon>
         </Content>

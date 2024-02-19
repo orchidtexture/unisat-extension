@@ -19,6 +19,7 @@ import './index.less';
 
 export interface InputProps {
   preset?: Presets;
+  name?: string;
   placeholder?: string;
   children?: React.ReactNode;
   onChange?: React.ChangeEventHandler<HTMLInputElement>;
@@ -292,10 +293,11 @@ export const AddressInput = (props: InputProps) => {
 };
 
 function TextInput(props: InputProps) {
-  const { placeholder, containerStyle, style: $inputStyleOverride, disabled, autoFocus, ...rest } = props;
+  const { name, placeholder, containerStyle, style: $inputStyleOverride, disabled, autoFocus, ...rest } = props;
   return (
     <div style={Object.assign({}, $baseContainerStyle, containerStyle)}>
       <input
+        name={name}
         placeholder={placeholder}
         type={'text'}
         disabled={disabled}

@@ -1,9 +1,9 @@
-# Kondor Wallet
+# ZKy Wallet
 
-Kondor Wallet - The first ZK-Rollup focused browser extension wallet for Bison Network and Bitcoin.
+ZKy Wallet - The first ZK-Rollup focused browser extension wallet for Bison Network and Bitcoin.
 
-- Website: https://kondor.finance/
-- Twitter: https://twitter.com/KondorFinance
+- Website: https://zkywallet.com/
+- Twitter: https://twitter.com/zkywallet
 
 ## How to build
 
@@ -16,4 +16,4 @@ Kondor Wallet - The first ZK-Rollup focused browser extension wallet for Bison N
 
 ## Special Thanks
 
-Thanks to the UniSat team for their contributions to the Bitcoin wallet community and thanks to the MetaMask team for their contributions to the browser extension wallet community, Kondor Wallet relies heavily on their contributions.
+Thanks to the UniSat team for their contributions to the Bitcoin wallet community and thanks to the MetaMask team for their contributions to the browser extension wallet community, ZKy Wallet relies heavily on their contributions.
