@@ -1,5 +1,5 @@
 /* eslint-disable quotes */
-import { Button, Column, Content, Layout, Logo, Row, Text } from '@/ui/components';
+import { Button, Column, Content, Layout, Logo, Row } from '@/ui/components';
 import { useWallet } from '@/ui/utils';
 
 import { useNavigate } from '../MainRoute';
@@ -16,11 +16,11 @@ export default function WelcomeScreen() {
             <Logo preset="large" />
           </Row>
           <Column gap="xl" mt="xxl">
-            <Text
+            {/* <Text
               text={"Inscribe and store your inscriptions in the world's first Open Source Chrome wallet for Ordinals!"}
               preset="sub"
               textCenter
-            />
+            /> */}
 
             <Button
               text="Create new wallet"
@@ -35,7 +35,7 @@ export default function WelcomeScreen() {
               }}
             />
             <Button
-              text="I already have a wallet"
+              text="Import wallet"
               preset="default"
               onClick={async () => {
                 const isBooted = await wallet.isBooted();
