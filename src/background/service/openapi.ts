@@ -14,8 +14,11 @@ import {
   SignedTransferTxn,
   TokenBalance,
   TokenTransfer,
-  TxnParams, UnsignedTransferTxn, UTXO,
-  UTXO_Detail, VersionDetail,
+  TxnParams,
+  UTXO,
+  UTXO_Detail,
+  UnsignedTransferTxn,
+  VersionDetail,
   WalletConfig
 } from '@/shared/types';
 import randomstring from 'randomstring';
@@ -131,7 +134,7 @@ export class OpenApiService {
         this.store.config = await this.getWalletConfig();
       } catch (e) {
         this.store.config = {
-          version: '0.0.0',
+          version: '0.0.1',
           moonPayEnabled: true,
           statusMessage: (e as any).message
         };
@@ -277,7 +280,7 @@ export class OpenApiService {
   async getWalletConfig(): Promise<WalletConfig> {
     // return this.httpGet('/default/config', {});
     return {
-      version: '0.0.0',
+      version: '0.0.1',
       moonPayEnabled: false,
       statusMessage: ''
     };
