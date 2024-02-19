@@ -376,6 +376,7 @@ export interface TxnParams {
     gas_estimated?: number;
     gas_estimated_hash?: string;
     L1txid?: string;
+    inscriptionId?: string;
 }
 
 export interface BisonSequencerPegInMessage {

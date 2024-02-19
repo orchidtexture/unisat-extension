@@ -1,6 +1,3 @@
-import { Tabs, Tooltip } from 'antd';
-import { CSSProperties, useEffect, useMemo, useState } from 'react';
-
 import { KEYRING_TYPE } from '@/shared/constant';
 import { Arc20Balance, BisonBalance, Inscription, NetworkType, TokenBalance } from '@/shared/types';
 import { Card, Column, Content, Footer, Header, Icon, Layout, Row, Text } from '@/ui/components';
@@ -30,11 +27,13 @@ import {
   useVersionInfo,
   useWalletConfig
 } from '@/ui/state/settings/hooks';
-import { useAssetTabKey, useAtomicalsAssetTabKey, useOrdinalsAssetTabKey } from '@/ui/state/ui/hooks';
-import { AssetTabKey, AtomicalsAssetTabKey, OrdinalsAssetTabKey, uiActions } from '@/ui/state/ui/reducer';
+import { useAssetTabKey, useAtomicalsAssetTabKey, useBisonAssetTabKey, useOrdinalsAssetTabKey } from '@/ui/state/ui/hooks';
+import { AssetTabKey, AtomicalsAssetTabKey, BisonAssetTabKey, OrdinalsAssetTabKey, uiActions } from '@/ui/state/ui/reducer';
 import { fontSizes } from '@/ui/theme/font';
 import { useWallet } from '@/ui/utils';
 import { LoadingOutlined } from '@ant-design/icons';
+import { Tabs, Tooltip } from 'antd';
+import { CSSProperties, useEffect, useMemo, useState } from 'react';
 
 import { useNavigate } from '../MainRoute';
 
@@ -288,8 +287,36 @@ function OrdinalsTab() {
 
 function BisonTab() {
   const addressSummary = useAddressSummary();
-  console.log(addressSummary);
-  return <Column>{BisonList()}</Column>;
+  const tabItems = [
+    {
+      key: BisonAssetTabKey.ALL,
+      label: `TOKENS`,  //todo: add amount of tokens like Tokens (0) from addressSummary
+      children: <BisonList />
+    },
+    {
+      key: BisonAssetTabKey.INSCRIPTIONS,
+      label: `INSCRIPTIONS`,
+      children: <BisonInscriptionList />
+    }
+  ];
+
+  const tabKey = useBisonAssetTabKey()
+  const dispatch = useAppDispatch();
+  return (
+    <Column>
+      <Row justifyBetween>
+        <TabBar
+          defaultActiveKey={tabKey}
+          activeKey={tabKey}
+          items={tabItems}
+          preset="style2"
+          onTabClick={(key) => {
+            dispatch(uiActions.updateAssetTabScreen({ bisonAssetTabKey: key }));
+          }}
+        />
+      </Row>
+      {tabItems[tabKey].children}
+    </Column>)
 }
 
 function AtomicalsTab() {
@@ -416,6 +443,83 @@ function InscriptionList() {
     </Column>
   );
 }
+
+function BisonInscriptionList() {
+  const navigate = useNavigate();
+  const wallet = useWallet();
+  const currentAccount = useCurrentAccount();
+
+  const [bisonInscriptions, setBisonInscriptions] = useState<Inscription[]>([]);
+  const [total, setTotal] = useState(-1);
+  const [pagination, setPagination] = useState({ currentPage: 1, pageSize: 100 });
+
+  const tools = useTools();
+
+  const fetchData = async () => {
+    try {
+      console.log("entry")
+      const { list } = await wallet.b_getInscriptionList(
+        currentAccount.address,
+      );
+      console.log("list----------------------")
+      console.log(list)
+      setBisonInscriptions(list);
+      setTotal(list.length);
+    } catch (e) {
+      console.log(e)
+      tools.toastError((e as Error).message);
+    } finally {
+      // tools.showLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [pagination]);
+
+  if (total === -1) {
+    return (
+      <Column style={{ minHeight: 150 }} itemsCenter justifyCenter>
+        <LoadingOutlined />
+      </Column>
+    );
+  }
+
+  if (total === 0) {
+    return (
+      <Column style={{ minHeight: 150 }} itemsCenter justifyCenter>
+        <Empty text="Empty" />
+      </Column>
+    );
+  }
+
+  return (
+    <Column>
+      <Row style={{ flexWrap: 'wrap' }} gap="lg">
+        {bisonInscriptions.map((data, index) => (
+          <InscriptionPreview
+            key={index}
+            data={data}
+            preset="medium"
+            onClick={() => {
+              navigate('OrdinalsInscriptionScreen', { inscription: data, withSend: true });
+            }}
+          />
+        ))}
+      </Row>
+      <Row justifyCenter mt="lg">
+        <Pagination
+          pagination={pagination}
+          total={total}
+          onChange={(pagination) => {
+            setPagination(pagination);
+          }}
+        />
+      </Row>
+    </Column>
+  );
+}
+
 
 function BRC20List() {
   const navigate = useNavigate();

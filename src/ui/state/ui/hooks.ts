@@ -15,6 +15,11 @@ export function useOrdinalsAssetTabKey() {
   return uiState.ordinalsAssetTabKey;
 }
 
+export function useBisonAssetTabKey() {
+  const uiState = useUIState();
+  return uiState.bisonAssetTabKey;
+}
+
 export function useAtomicalsAssetTabKey() {
   const uiState = useUIState();
   return uiState.atomicalsAssetTabKey;
