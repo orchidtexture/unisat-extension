@@ -13,7 +13,7 @@ import { Text } from '../Text';
 
 export const NoticePopover = ({ onClose }: { onClose: () => void }) => {
   const [checked1, setChecked1] = useState(false);
-  const [checked2, setChecked2] = useState(false);
+  const [checked2, setChecked2] = useState(true);
 
   const [enable, setEnable] = useState(false);
   const [coolDown, setCoolDown] = useState(3);
@@ -51,11 +51,11 @@ export const NoticePopover = ({ onClose }: { onClose: () => void }) => {
           <Row style={{ borderTopWidth: 1, borderColor: colors.border }} my="md" />
 
           <div>
-            <Checkbox checked={checked2} onChange={(e) => setChecked2(e.target.checked)}>
+            {/* <Checkbox checked={checked2} onChange={(e) => setChecked2(e.target.checked)}>
               <div style={{ fontSize: fontSizes.sm }}>
                 for Atomicals assets, <span style={{ color: '#EBB94C' }}>Non-ARC20</span> are not supported yet.
               </div>
-            </Checkbox>
+            </Checkbox> */}
           </div>
         </Column>
 
