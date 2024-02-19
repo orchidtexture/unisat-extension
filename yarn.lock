@@ -2844,7 +2844,7 @@
     "bignumber.js" "^9.1.2"
     "bip39" "^3.1.0"
     "bitcoinjs-lib" "^6.1.0"
-    "bitcore-lib" "^10.0.0"
+    "bitcore-lib" "^10.0.1"
     "ecpair" "^2.1.0"
     "hdkey" "^2.1.0"
     "tiny-secp256k1" "=2.2.1"
@@ -3955,7 +3955,7 @@
     "secp256k1" "^3.0.1"
     "varuint-bitcoin" "^1.0.1"
 
-"bitcore-lib@^10.0.0":
+"bitcore-lib@^10.0.1":
   "integrity" "sha512-HnwdOAXfwNJqia6SW7feAeh7fDwk7p21XXo32uTqhWzYDJ2MkalpTerl8hM5o6xYHWEIaY5rxCSaQMhKvQLXOg=="
   "resolved" "https://registry.npmjs.org/bitcore-lib/-/bitcore-lib-10.0.23.tgz"
   "version" "10.0.23"
@@ -5670,10 +5670,10 @@
   "resolved" "https://registry.npmjs.org/dotenv-expand/-/dotenv-expand-5.1.0.tgz"
   "version" "5.1.0"
 
-"dotenv@^10.0.0":
+"dotenv@^10.0.1":
   "integrity" "sha512-rlBi9d8jpv9Sf1klPjNfFAuWDjKLwTIJJ/VxtoTwIR6hnZxcEOQCZg2oIL3MWBYw5GpUDKOEnND7LXTbIpQ03Q=="
-  "resolved" "https://registry.npmjs.org/dotenv/-/dotenv-10.0.0.tgz"
-  "version" "10.0.0"
+  "resolved" "https://registry.npmjs.org/dotenv/-/dotenv-10.0.1.tgz"
+  "version" "10.0.1"
 
 "drbg.js@^1.0.1":
   "integrity" "sha512-F4wZ06PvqxYLFEZKkFxTDcns9oFNk34hvmJSEwdzsxVQ8YI5YaxtACgQatkYgv2VI2CFkUd2Y+xosPQnHv809g=="
@@ -6119,10 +6119,10 @@
     "semver" "^6.3.1"
     "string.prototype.matchall" "^4.0.8"
 
-"eslint-plugin-simple-import-sort@^10.0.0":
+"eslint-plugin-simple-import-sort@^10.0.1":
   "integrity" "sha512-AeTvO9UCMSNzIHRkg8S6c3RPy5YEwKWSQPx3DYghLedo2ZQxowPFLGDN1AZ2evfg6r6mjBSZSLxLFsWSu3acsw=="
-  "resolved" "https://registry.npmjs.org/eslint-plugin-simple-import-sort/-/eslint-plugin-simple-import-sort-10.0.0.tgz"
-  "version" "10.0.0"
+  "resolved" "https://registry.npmjs.org/eslint-plugin-simple-import-sort/-/eslint-plugin-simple-import-sort-10.0.1.tgz"
+  "version" "10.0.1"
 
 "eslint-plugin-unused-imports@^2.0.0":
   "integrity" "sha512-3APeS/tQlTrFa167ThtP0Zm0vctjr4M44HMpeg1P4bK6wItarumq0Ma82xorMKdFsWpphQBlRPzw/pxiVELX1A=="
@@ -6799,7 +6799,7 @@
   "resolved" "https://registry.npmjs.org/fresh/-/fresh-0.5.2.tgz"
   "version" "0.5.2"
 
-"fs-extra@^10.0.0":
+"fs-extra@^10.0.1":
   "integrity" "sha512-oRXApq54ETRj4eMiFzGnHWGy+zo5raudjuxN0b8H7s/RU2oW0Wvsx9O0ACRN/kRq9E8Vu/ReskGB5o3ji+FzHQ=="
   "resolved" "https://registry.npmjs.org/fs-extra/-/fs-extra-10.1.0.tgz"
   "version" "10.1.0"
@@ -9278,7 +9278,7 @@
   dependencies:
     "yallist" "^4.0.0"
 
-"lru-cache@^9.1.1 || ^10.0.0":
+"lru-cache@^9.1.1 || ^10.0.1":
   "integrity" "sha512-2bIM8x+VAf6JT4bKAljS1qUWgMsqZRPGJS6FSahIMPVvctcNhyVp7AJu7quxOW9jwkryBReKZY5tY5JYv2n/7Q=="
   "resolved" "https://registry.npmjs.org/lru-cache/-/lru-cache-10.2.0.tgz"
   "version" "10.2.0"
@@ -10251,7 +10251,7 @@
   "resolved" "https://registry.npmjs.org/path-scurry/-/path-scurry-1.10.1.tgz"
   "version" "1.10.1"
   dependencies:
-    "lru-cache" "^9.1.1 || ^10.0.0"
+    "lru-cache" "^9.1.1 || ^10.0.1"
     "minipass" "^5.0.0 || ^6.0.2 || ^7.0.0"
 
 "path-to-regexp@0.1.7":
@@ -11625,7 +11625,7 @@
     "create-react-context" "^0.3.0"
     "hoist-non-react-statics" "^3.3.0"
     "react-node-key" "^0.3.1"
-    "szfe-tools" "^0.0.0-beta.7"
+    "szfe-tools" "^0.0.1-beta.7"
 
 "react-app-polyfill@^3.0.0":
   "integrity" "sha512-sZ41cxiU5llIB003yxxQBYrARBqe0repqPTTYBTmMqTz9szeBbE37BehCE891NZsmdZqqP+xWKdT3eo3vOzN8w=="
@@ -11743,7 +11743,7 @@
   "version" "0.3.2"
   dependencies:
     "jsx-ast-utils" "^2.2.1"
-    "szfe-tools" "^0.0.0-beta.7"
+    "szfe-tools" "^0.0.1-beta.7"
 
 "react-redux@^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0", "react-redux@^7.2.1 || ^8.0.2", "react-redux@^8.0.1":
   "integrity" "sha512-n0ZrutD7DaX/j9VscF+uTALI3oUPa/pO4Z3soOBIjuRn/FzVu6aehhysxZCLi6y7duMf52WNZGMl7CtuK5EnRw=="
@@ -13379,10 +13379,10 @@
   dependencies:
     "acorn-node" "^1.2.0"
 
-"szfe-tools@^0.0.0-beta.7":
+"szfe-tools@^0.0.1-beta.7":
   "integrity" "sha512-/M7+Tel2G8zapfDYZlz17hf9ViqAi/loZMfM81b5iZMyaWL/t5dajBszEBI2kyIDFzlLT4btBcq+BimFgmAHug=="
-  "resolved" "https://registry.npmjs.org/szfe-tools/-/szfe-tools-0.0.0-beta.7.tgz"
-  "version" "0.0.0-beta.7"
+  "resolved" "https://registry.npmjs.org/szfe-tools/-/szfe-tools-0.0.1-beta.7.tgz"
+  "version" "0.0.1-beta.7"
   dependencies:
     "@babel/runtime" "^7.10.2"
 
