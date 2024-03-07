@@ -197,17 +197,6 @@ export default function WalletTabScreen() {
               }}
               full
             />
-            {walletConfig.moonPayEnabled && (
-              <Button
-                text="Buy"
-                preset="default"
-                icon="bitcoin"
-                onClick={(e) => {
-                  navigate('MoonPayScreen');
-                }}
-                full
-              />
-            )}
           </Row>
 
           {/* <div>
