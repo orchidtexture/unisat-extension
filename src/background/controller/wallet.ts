@@ -508,8 +508,6 @@ export class WalletController extends BaseController {
   };
 
   signBIP322Simple = async (text: string) => {
-    console.log('firmando 322')
-    console.log(text)
     const account = preferenceService.getCurrentAccount();
     if (!account) throw new Error('no current account');
     const networkType = this.getNetworkType();

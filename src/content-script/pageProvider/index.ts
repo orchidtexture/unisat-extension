@@ -223,6 +223,16 @@ export class ZkyProvider extends EventEmitter {
     });
   };
 
+  signMultipleMessages = async ( messages: string[], type: string) => {
+    return this._request({
+      method: 'signMultipleMessages',
+      params: {
+        messages,
+        type
+      }
+    });
+  };
+
   sendBitcoin = async (toAddress: string, satoshis: number, options?: { feeRate: number }) => {
     return this._request({
       method: 'sendBitcoin',
