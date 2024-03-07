@@ -29,7 +29,6 @@ import BRC20TokenScreen from './BRC20/BRC20TokenScreen';
 import AppTabScrren from './Main/AppTabScreen';
 import BoostScreen from './Main/BoostScreen';
 import BridgeTabScreen from './Main/BridgeTabScreen';
-import DiscoverTabScreen from './Main/DiscoverTabScreen';
 import FaqTabScreen from './Main/FaqTabScreen';
 import SettingsTabScreen from './Main/SettingsTabScreen';
 import WalletTabScreen from './Main/WalletTabScreen';
@@ -49,7 +48,6 @@ import UpgradeNoticeScreen from './Settings/UpgradeNoticeScreen';
 import TestScreen from './Test/TestScreen';
 import BisonPegInConfirmScreen from './Wallet/BisonPegInConfirmScreen';
 import HistoryScreen from './Wallet/HistoryScreen';
-import MoonPayScreen from './Wallet/MoonPayScreen';
 import ReceiveScreen from './Wallet/ReceiveScreen';
 import TxBisonConfirmScreen from './Wallet/TxBisonConfirmScreen';
 import TxBisonCreateScreen from './Wallet/TxBisonCreateScreen';
@@ -67,19 +65,19 @@ const routes = {
     element: <BoostScreen />
   },
   WelcomeScreen: {
-    path: '/welcome',
+    path: '/welcome',//ok
     element: <WelcomeScreen />
   },
   MainScreen: {
-    path: '/main',
+    path: '/main', //ok
     element: <WalletTabScreen />
   },
-  DiscoverTabScreen: {
-    path: '/discover',
-    element: <DiscoverTabScreen />
-  },
+  // DiscoverTabScreen: {
+  //   path: '/discover', //ok
+  //   element: <DiscoverTabScreen />
+  // },
   FaqTabScreen: {
-    path: '/faq',
+    path: '/faq', //ok
     element: <FaqTabScreen />
   },
   AppTabScrren: {
@@ -87,11 +85,11 @@ const routes = {
     element: <AppTabScrren />
   },
   SettingsTabScreen: {
-    path: '/settings',
+    path: '/settings', //ok
     element: <SettingsTabScreen />
   },
   BridgeTabScreen: {
-    path: '/bridge',
+    path: '/bridge', //ok
     element: <BridgeTabScreen />
   },
   BisonPegInConfirmScreen: {
@@ -99,60 +97,60 @@ const routes = {
     element: <BisonPegInConfirmScreen />
   },
   CreateHDWalletScreen: {
-    path: '/account/create-hd-wallet',
+    path: '/account/create-hd-wallet',//ok
     element: <CreateHDWalletScreen />
   },
   CreateAccountScreen: {
-    path: '/account/create',
+    path: '/account/create', //ok
     element: <CreateAccountScreen />
   },
   CreatePasswordScreen: {
-    path: '/account/create-password',
+    path: '/account/create-password', //ok
     element: <CreatePasswordScreen />
   },
   UnlockScreen: {
-    path: '/account/unlock',
+    path: '/account/unlock', // ok
     element: <UnlockScreen />
   },
   SwitchAccountScreen: {
-    path: '/account/switch-account',
+    path: '/account/switch-account', //ok
     element: <SwitchAccountScreen />
   },
   ReceiveScreen: {
-    path: '/wallet/receive',
+    path: '/wallet/receive', //ok
     element: <ReceiveScreen />
   },
 
   TxCreateScreen: {
-    path: '/wallet/tx/create',
+    path: '/wallet/tx/create', // ok
     element: <TxCreateScreen />
   },
   TxBitcoinCreateScreen: {
-    path: '/wallet/tx/bitcoin/create',
+    path: '/wallet/tx/bitcoin/create', //ok
     element: <TxBitcoinCreateScreen />
   },
   TxBisonCreateScreen: {
-    path: '/wallet/tx/bison/create',
+    path: '/wallet/tx/bison/create', //ok
     element: <TxBisonCreateScreen />
   },
   TxConfirmScreen: {
-    path: '/wallet/tx/confirm',
+    path: '/wallet/tx/confirm', //ok
     element: <TxConfirmScreen />
   },
   TxBisonConfirmScreen: {
-    path: '/wallet/tx/confirm/bison',
+    path: '/wallet/tx/confirm/bison', //ok
     element: <TxBisonConfirmScreen />
   },
   TxSuccessScreen: {
-    path: '/wallet/tx/success',
+    path: '/wallet/tx/success', //ok
     element: <TxSuccessScreen />
   },
   TxBisonSuccessScreen: {
-    path: '/wallet/tx/success/bison',
+    path: '/wallet/tx/success/bison', //ok
     element: <TxBisonSuccessScreen />
   },
   TxFailScreen: {
-    path: '/wallet/tx/fail',
+    path: '/wallet/tx/fail',//ok
     element: <TxFailScreen />
   },
 
@@ -258,10 +256,10 @@ const routes = {
     path: '/test',
     element: <TestScreen />
   },
-  MoonPayScreen: {
-    path: '/moonpay',
-    element: <MoonPayScreen />
-  },
+  // MoonPayScreen: {
+  //   path: '/moonpay',
+  //   element: <MoonPayScreen />
+  // },
   SplitOrdinalsInscriptionScreen: {
     path: '/wallet/split-tx/create',
     element: <SplitOrdinalsInscriptionScreen />
@@ -342,7 +340,6 @@ const Main = () => {
           dispatch(settingsActions.updateSettings({ skippedVersion: data }));
         });
       }
-
       dispatch(globalActions.update({ isReady: true }));
     } catch (e) {
       console.log('init error', e);

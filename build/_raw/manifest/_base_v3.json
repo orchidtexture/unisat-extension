@@ -27,8 +27,7 @@
   "homepage_url": "https://www.zkywallet.com",
   "permissions": [
     "storage",
-    "unlimitedStorage",
-    "activeTab"
+    "unlimitedStorage"
   ],
   "short_name": "__MSG_appName__",
   "content_scripts": [
