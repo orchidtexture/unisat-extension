@@ -147,12 +147,36 @@ class ProviderController extends BaseController {
       }
     }
 
-  // @Reflect.metadata('APPROVAL', ['SignTx', () => {
-  //   // todo check
-  // }])
-  //   signTx = async () => {
-  //     // todo
-  //   }
+    @Reflect.metadata('APPROVAL', ['SignTexts', () => {
+      // todo check text
+    }])
+      signMultipleMessages = async ({ data: { params: { messages, type } } }) => {
+        const signaturesArray: string[] = []
+
+        if (type === 'bip322-simple') {
+          await Promise.all(messages.map(async (text) => {
+            const sig = await wallet.signBIP322Simple(text)
+            signaturesArray.push(sig)
+            console.log(signaturesArray.length)
+            console.log(signaturesArray)
+          }))
+        } else {
+          await Promise.all(messages.map(async (text) => {
+            const sig = await wallet.signMessage(text)
+            signaturesArray.push(sig)
+          }))
+        }
+
+        return signaturesArray
+      }
+
+
+    // @Reflect.metadata('APPROVAL', ['SignTx', () => {
+    //   // todo check
+    // }])
+    //   signTx = async () => {
+    //     // todo
+    //   }
 
   @Reflect.metadata('SAFE',true)
     pushTx = async ({data:{params:{rawtx}}}) => {
@@ -220,7 +244,7 @@ class ProviderController extends BaseController {
     isAtomicalsEnabled = async () => {
       return await wallet.isAtomicalsEnabled()
     };
-    
+
 }
 
 export default new ProviderController();

@@ -508,8 +508,6 @@ export class WalletController extends BaseController {
   };
 
   signBIP322Simple = async (text: string) => {
-    console.log('firmando 322')
-    console.log(text)
     const account = preferenceService.getCurrentAccount();
     if (!account) throw new Error('no current account');
     const networkType = this.getNetworkType();
@@ -1653,10 +1651,7 @@ export class WalletController extends BaseController {
       const inscriptionDetails: any = openapiService.getInscriptionUtxoDetail(inscription.inscriptionId);
       return inscriptionDetails;
     });
-    console.log('MAPPING INSC RESULTS')
     const results = await Promise.all(arrayInscription);
-    console.log(results)
-    console.log('--------')
     return {
       currentPage,
       pageSize,

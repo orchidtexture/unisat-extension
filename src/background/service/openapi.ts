@@ -386,10 +386,8 @@ export class OpenApiService {
     let nonce = await this.b_getNonce(sAddr);
     nonce += 1;
     const txn = buldTransferTxn({sAddr, rAddr, amt, tick, tokenContractAddress, nonce});
-    console.log('txn', txn)
     const fee: any = await this.b_httpPost('/sequencer_endpoint/gas_meter', txn);
     const formatedTxn = buldTransferTxn({...txn, nonce, gas_estimated: fee.gas_estimated, gas_estimated_hash: fee.gas_estimated_hash});
-    console.log('formatedTxn', formatedTxn)
     return formatedTxn
   }
 
@@ -400,8 +398,6 @@ export class OpenApiService {
 
   async b_enqueueTxn(txn): Promise<any> {
     const formatedTxn = buldTransferTxn(txn);
-    console.log('senging to api: ')
-    console.log(JSON.stringify(formatedTxn))
     const tx: any = this.b_httpPost('/sequencer_endpoint/enqueue_transaction', formatedTxn);
     return tx;
   }

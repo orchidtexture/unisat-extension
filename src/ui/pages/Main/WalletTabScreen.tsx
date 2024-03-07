@@ -290,12 +290,12 @@ function BisonTab() {
   const tabItems = [
     {
       key: BisonAssetTabKey.ALL,
-      label: `TOKENS`,  //todo: add amount of tokens like Tokens (0) from addressSummary
+      label: 'TOKENS',  //todo: add amount of tokens like Tokens (0) from addressSummary
       children: <BisonList />
     },
     {
       key: BisonAssetTabKey.INSCRIPTIONS,
-      label: `INSCRIPTIONS`,
+      label: 'INSCRIPTIONS',
       children: <BisonInscriptionList />
     }
   ];
@@ -457,12 +457,9 @@ function BisonInscriptionList() {
 
   const fetchData = async () => {
     try {
-      console.log("entry")
       const { list } = await wallet.b_getInscriptionList(
         currentAccount.address,
       );
-      console.log("list----------------------")
-      console.log(list)
       setBisonInscriptions(list);
       setTotal(list.length);
     } catch (e) {
