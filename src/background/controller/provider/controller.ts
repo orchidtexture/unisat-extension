@@ -169,7 +169,30 @@ class ProviderController extends BaseController {
 
         return signaturesArray
       }
+    @Reflect.metadata('APPROVAL', ['SignTexts', () => {
+      // todo check text
+    }])
+      sendMultiSwap = async ({ data: { params: { messages, type } } }) => {
+        const signaturesArray: string[] = []
 
+        // todo: add screen to confirm tx
+        if (type === 'bip322-simple') {
+          await Promise.all(messages.map(async (text) => {
+            const sig = await wallet.signBIP322Simple(text)
+            signaturesArray.push(sig)
+          }))
+        } else {
+          await Promise.all(messages.map(async (text) => {
+            const sig = await wallet.signMessage(text)
+            signaturesArray.push(sig)
+          }))
+        }
+        return await Promise.all(signaturesArray.map(sig =>
+        //build tx
+        // wallet.enqueueTransferTxn(tx))
+          console.log(sig)
+        ))
+      }
 
     // @Reflect.metadata('APPROVAL', ['SignTx', () => {
     //   // todo check

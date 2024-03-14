@@ -427,9 +427,10 @@ export default function SignPsbt({
     } else if (type === TxType.SEND_ORDINALS_INSCRIPTION) {
       if (!psbtHex && toAddress && inscriptionId) {
         try {
+          const inscriptionIds = Array.isArray(inscriptionId) ? inscriptionId : [inscriptionId]
           const rawTxInfo = await prepareSendOrdinalsInscriptions({
             toAddressInfo: { address: toAddress, domain: '' },
-            inscriptionIds: [inscriptionId],
+            inscriptionIds,
             feeRate,
             enableRBF: false
           });

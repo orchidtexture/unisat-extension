@@ -1037,6 +1037,11 @@ export class WalletController extends BaseController {
     return txnResp;
   };
 
+  enqueueTxHash = async (txHash: string): Promise<BisonTxnResponse> => {
+    const txnResp = await this.openapi.b_enqueueTxnHash(txHash);
+    return txnResp;
+  };
+
   enqueuePegInTxn = async (txn: BisonSequencerPegInMessage,): Promise<BisonTxnResponse> => {
     const txnResp = await this.openapi.b_enqueuePegInTxn(txn);
     return txnResp;
