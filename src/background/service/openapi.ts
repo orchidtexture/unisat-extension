@@ -403,7 +403,9 @@ export class OpenApiService {
   }
 
   async b_enqueueTxHash(txn): Promise<any> {
-    const tx: any = this.b_httpPost('/sequencer_endpoint/enqueue_transaction', formatedTxn);
+    const tx: any = this.b_httpPost('/sequencer_endpoint/enqueue_transaction', {
+      
+    });
     return tx;
   }
 

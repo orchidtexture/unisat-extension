@@ -18,7 +18,7 @@ import {
 } from '@/ui/state/transactions/hooks';
 import { colors } from '@/ui/theme/colors';
 import { fontSizes } from '@/ui/theme/font';
-import { copyToClipboard, satoshisToAmount, shortAddress, useApproval, useWallet } from '@/ui/utils';
+import { satoshisToAmount, useApproval, useWallet } from '@/ui/utils';
 import { LoadingOutlined } from '@ant-design/icons';
 
 interface Props {
@@ -71,12 +71,24 @@ function SignTxDetails({ txInfo, type, rawTxInfo }: { txInfo: TxInfo; rawTxInfo?
   const address = useAccountAddress();
 
   const sendingInscriptions = useMemo(() => {
+    if (Array.isArray(txInfo.decodedPsbt)) {
+      return txInfo.decodedPsbt.map(d => d.inputInfos)
+        .flat()
+        .reduce<Inscription[]>((pre, cur) => cur.inscriptions.concat(pre), [])
+        .filter((v) => v.address == address);
+    }
     return txInfo.decodedPsbt.inputInfos
       .reduce<Inscription[]>((pre, cur) => cur.inscriptions.concat(pre), [])
       .filter((v) => v.address == address);
   }, [txInfo.decodedPsbt]);
 
   const receivingInscriptions = useMemo(() => {
+    if (Array.isArray(txInfo.decodedPsbt)) {
+      return txInfo.decodedPsbt.map(d => d.outputInfos)
+        .flat()
+        .reduce<Inscription[]>((pre, cur) => cur.inscriptions.concat(pre), [])
+        .filter((v) => v.address == address);
+    }
     return txInfo.decodedPsbt.outputInfos
       .reduce<Inscription[]>((pre, cur) => cur.inscriptions.concat(pre), [])
       .filter((v) => v.address == address);
@@ -91,10 +103,10 @@ function SignTxDetails({ txInfo, type, rawTxInfo }: { txInfo: TxInfo; rawTxInfo?
   }, [type]);
 
   const spendSatoshis = useMemo(() => {
-    const inValue = txInfo.decodedPsbt.inputInfos
+    const inValue = (Array.isArray(txInfo.decodedPsbt) ? txInfo.decodedPsbt.map(d => d.inputInfos).flat() : txInfo.decodedPsbt.inputInfos)
       .filter((v) => v.address === address)
       .reduce((pre, cur) => cur.value + pre, 0);
-    const outValue = txInfo.decodedPsbt.outputInfos
+    const outValue = (Array.isArray(txInfo.decodedPsbt) ? txInfo.decodedPsbt.map(d => d.outputInfos).flat() : txInfo.decodedPsbt.outputInfos)
       .filter((v) => v.address === address)
       .reduce((pre, cur) => cur.value + pre, 0);
     const spend = inValue - outValue;
@@ -102,14 +114,14 @@ function SignTxDetails({ txInfo, type, rawTxInfo }: { txInfo: TxInfo; rawTxInfo?
   }, [txInfo.decodedPsbt]);
 
   const sendingSatoshis = useMemo(() => {
-    const inValue = txInfo.decodedPsbt.inputInfos
+    const inValue = (Array.isArray(txInfo.decodedPsbt) ? txInfo.decodedPsbt.map(d => d.inputInfos).flat() : txInfo.decodedPsbt.inputInfos)
       .filter((v) => v.address === address)
       .reduce((pre, cur) => cur.value + pre, 0);
     return inValue;
   }, [txInfo.decodedPsbt]);
 
   const receivingSatoshis = useMemo(() => {
-    const outValue = txInfo.decodedPsbt.outputInfos
+    const outValue = (Array.isArray(txInfo.decodedPsbt) ? txInfo.decodedPsbt.map(d => d.outputInfos).flat() : txInfo.decodedPsbt.outputInfos)
       .filter((v) => v.address === address)
       .reduce((pre, cur) => cur.value + pre, 0);
     return outValue;
@@ -120,7 +132,9 @@ function SignTxDetails({ txInfo, type, rawTxInfo }: { txInfo: TxInfo; rawTxInfo?
     () => satoshisToAmount(receivingSatoshis - sendingSatoshis),
     [sendingSatoshis, receivingSatoshis]
   );
-  const feeAmount = useMemo(() => satoshisToAmount(txInfo.decodedPsbt.fee), [txInfo.decodedPsbt]);
+  const feeAmount = useMemo(() => satoshisToAmount(
+    (Array.isArray(txInfo.decodedPsbt) ?txInfo.decodedPsbt.reduce((acc, decoded) => acc + decoded.fee, 0) : txInfo.decodedPsbt.fee)
+  ), [txInfo.decodedPsbt]);
 
   const sendingInscriptionSaotoshis = useMemo(
     () => sendingInscriptions.reduce((pre, cur) => pre + cur.outputValue, 0),
@@ -131,15 +145,15 @@ function SignTxDetails({ txInfo, type, rawTxInfo }: { txInfo: TxInfo; rawTxInfo?
     [sendingInscriptionSaotoshis]
   );
 
-  const ordinalsInscriptionCount = txInfo.decodedPsbt.inputInfos.reduce(
+  const ordinalsInscriptionCount = (Array.isArray(txInfo.decodedPsbt) ? txInfo.decodedPsbt.map(d => d.inputInfos).flat() : txInfo.decodedPsbt.inputInfos).reduce(
     (pre, cur) => cur.inscriptions?.length + pre,
     0
   );
-  const atomicalsNFTCount = txInfo.decodedPsbt.inputInfos.reduce(
+  const atomicalsNFTCount = (Array.isArray(txInfo.decodedPsbt) ? txInfo.decodedPsbt.map(d => d.inputInfos).flat() : txInfo.decodedPsbt.inputInfos).reduce(
     (pre, cur) => cur.atomicals.filter((v) => v.type === 'NFT').length + pre,
     0
   );
-  const arc20Count = txInfo.decodedPsbt.inputInfos.reduce(
+  const arc20Count = (Array.isArray(txInfo.decodedPsbt) ? txInfo.decodedPsbt.map(d => d.inputInfos).flat() : txInfo.decodedPsbt.inputInfos).reduce(
     (pre, cur) => cur.atomicals.filter((v) => v.type === 'FT').length + pre,
     0
   );
@@ -148,7 +162,7 @@ function SignTxDetails({ txInfo, type, rawTxInfo }: { txInfo: TxInfo; rawTxInfo?
   const atomicals_nft: Atomical[] = [];
   const atomicals_ft: Atomical[] = [];
   const arc20Map: { [ticker: string]: number } = {};
-  txInfo.decodedPsbt.inputInfos.forEach((v) => {
+  (Array.isArray(txInfo.decodedPsbt) ? txInfo.decodedPsbt.map(d => d.inputInfos).flat() : txInfo.decodedPsbt.inputInfos).forEach((v) => {
     v.atomicals.forEach((w) => {
       if (w.type === 'FT') {
         atomicals_ft.push(w);
@@ -159,7 +173,17 @@ function SignTxDetails({ txInfo, type, rawTxInfo }: { txInfo: TxInfo; rawTxInfo?
       }
     });
   });
-  const inscriptionArray = Object.values(txInfo.decodedPsbt.inscriptions);
+  function transformArrayToObject(array){
+    const result = {};
+    array.forEach((item) => {
+      Object.keys(item).forEach((key) => {
+        result[key] = item[key];
+      });
+    });
+
+    return result;
+  }
+  const inscriptionArray = Array.isArray(txInfo.decodedPsbt) ? txInfo.decodedPsbt.map((item: any) => (Object.values(((item as any)?.inscriptions) || {})[0] as any).inscriptionId) : Object.values(txInfo.decodedPsbt.inscriptions);
   const arc20Array = Object.keys(arc20Map).map((v) => ({ ticker: v, amt: arc20Map[v] }));
 
   const involvedAssets = useMemo(() => {
@@ -427,14 +451,29 @@ export default function SignPsbt({
     } else if (type === TxType.SEND_ORDINALS_INSCRIPTION) {
       if (!psbtHex && toAddress && inscriptionId) {
         try {
-          const inscriptionIds = Array.isArray(inscriptionId) ? inscriptionId : [inscriptionId]
-          const rawTxInfo = await prepareSendOrdinalsInscriptions({
-            toAddressInfo: { address: toAddress, domain: '' },
-            inscriptionIds,
-            feeRate,
-            enableRBF: false
-          });
-          psbtHex = rawTxInfo.psbtHex;
+          if (Array.isArray(inscriptionId) && inscriptionId?.length > 1 ) {
+            console.log('psbt is array')
+            const res: any = []
+            for(const i of inscriptionId) {
+              const resp = await prepareSendOrdinalsInscriptions({
+                toAddressInfo: { address: toAddress, domain: '' },
+                inscriptionIds: [i],
+                feeRate,
+                enableRBF: false
+              });
+              res.push(resp)
+            }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            psbtHex = res.map(r => r.psbtHex) as any
+          } else{
+            const rawTxInfo = await prepareSendOrdinalsInscriptions({
+              toAddressInfo: { address: toAddress, domain: '' },
+              inscriptionIds: [inscriptionId],
+              feeRate,
+              enableRBF: false
+            });
+            psbtHex = rawTxInfo.psbtHex;
+          }
         } catch (e) {
           console.log(e);
           txError = (e as any).message;
@@ -453,18 +492,47 @@ export default function SignPsbt({
 
     const { isScammer } = await wallet.checkWebsite(session?.origin || '');
 
-    const decodedPsbt = await wallet.decodePsbt(psbtHex);
+    let decodedPsbt
 
-    if (decodedPsbt.risks.length > 0) {
-      setIsWarningVisible(true);
+    if (Array.isArray(psbtHex)) {
+      decodedPsbt = await Promise.all(psbtHex.map(async(p)  => {
+        return await wallet.decodePsbt(p);
+      }))
+    } else {
+      decodedPsbt = await wallet.decodePsbt(psbtHex);
     }
+
+
+    if (Array.isArray(decodedPsbt)) {
+      if(decodedPsbt.some(d => d.risks.length > 0)) {
+        setIsWarningVisible(true);
+      }
+    } else {
+      if (decodedPsbt.risks.length > 0) {
+        setIsWarningVisible(true);
+      }
+    }
+
 
     let toSignInputs: ToSignInput[] = [];
     if (type === TxType.SEND_BITCOIN || type === TxType.SEND_ORDINALS_INSCRIPTION) {
-      toSignInputs = decodedPsbt.inputInfos.map((v, index) => ({
-        index,
-        publicKey: currentAccount.pubkey
-      }));
+
+      if (Array.isArray(decodedPsbt)) {
+        toSignInputs = decodedPsbt.map(d => {
+          const toSignInputsRes = d.inputInfos.map((v, index) => ({
+            index,
+            publicKey: currentAccount.pubkey
+          }));
+          return toSignInputsRes
+        })
+      } else {
+        toSignInputs = decodedPsbt.inputInfos.map((v, index) => ({
+          index,
+          publicKey: currentAccount.pubkey
+        }));
+      }
+
+
     } else {
       try {
         toSignInputs = await wallet.formatOptionsToSignInputs(psbtHex, options);
@@ -520,34 +588,64 @@ export default function SignPsbt({
   }, [txInfo.psbtHex]);
 
   const isValid = useMemo(() => {
+    console.log('------------txInfo-----------------------');
+    console.log(txInfo)
     if (txInfo.toSignInputs.length == 0) {
       return false;
     }
-    if (txInfo.decodedPsbt.inputInfos.length == 0) {
-      return false;
+    if (Array.isArray(txInfo.decodedPsbt)){
+      if(txInfo.decodedPsbt.some(d => d.inputInfos.length == 0)) {
+        return false
+      }
+    }else {
+      if (txInfo.decodedPsbt.inputInfos.length == 0) {
+        return false;
+      }
     }
     return true;
   }, [txInfo.decodedPsbt, txInfo.toSignInputs]);
 
-  const sendingInscriptions = useMemo(() => {
-    return txInfo.decodedPsbt.inputInfos
-      .reduce<Inscription[]>((pre, cur) => cur.inscriptions.concat(pre), [])
-      .filter((v) => v.address == address);
+  // const sendingInscriptions = useMemo(() => {
+  //   return txInfo.decodedPsbt.inputInfos
+  //     .reduce<Inscription[]>((pre, cur) => cur.inscriptions.concat(pre), [])
+  //     .filter((v) => v.address == address);
+  // }, [txInfo.decodedPsbt]);
+
+  // const canChanged = useMemo(() => {
+  //   let val = true;
+  //   txInfo.decodedPsbt.inputInfos.forEach((v) => {
+  //     if (v.address == address && (!v.sighashType || v.sighashType === 1)) {
+  //       val = false;
+  //     }
+  //   });
+  //   return val;
+  // }, [txInfo.decodedPsbt]);
+  const canChanged = useMemo(() => {
+    const inputInfos = Array.isArray(txInfo.decodedPsbt) ? txInfo.decodedPsbt : [txInfo.decodedPsbt];
+
+    return inputInfos.every(inputInfo => {
+      return inputInfo.inputInfos.every(v => {
+        return v.address !== address || (v.sighashType && v.sighashType !== 1);
+      });
+    });
   }, [txInfo.decodedPsbt]);
 
-  const canChanged = useMemo(() => {
-    let val = true;
-    txInfo.decodedPsbt.inputInfos.forEach((v) => {
-      if (v.address == address && (!v.sighashType || v.sighashType === 1)) {
-        val = false;
-      }
-    });
-    return val;
-  }, [txInfo.decodedPsbt]);
+
+  // const hasHighRisk = useMemo(() => {
+  //   if (txInfo && txInfo.decodedPsbt) {
+  //     return txInfo.decodedPsbt.risks.find((v) => v.level === 'high') ? true : false;
+  //   } else {
+  //     return false;
+  //   }
+  // }, [txInfo]);
 
   const hasHighRisk = useMemo(() => {
     if (txInfo && txInfo.decodedPsbt) {
-      return txInfo.decodedPsbt.risks.find((v) => v.level === 'high') ? true : false;
+      const inputInfos = Array.isArray(txInfo.decodedPsbt) ? txInfo.decodedPsbt : [txInfo.decodedPsbt];
+
+      return inputInfos.some(inputInfo => {
+        return inputInfo.risks && inputInfo.risks.find(v => v.level === 'high');
+      });
     } else {
       return false;
     }
@@ -606,15 +704,24 @@ export default function SignPsbt({
             </Section>
           )}
 
-          {canChanged == false && (
+          {/* {canChanged == false && (
             <Section title="Network Fee Rate:">
               <Text text={txInfo.decodedPsbt.feeRate.toString()} />
               <Text text="sat/vB" color="textDim" />
             </Section>
+          )} */}
+          {canChanged === false && (
+            <Section title="Network Fee Rate:">
+              {(Array.isArray(txInfo.decodedPsbt) ? txInfo.decodedPsbt : [txInfo.decodedPsbt]).map((decodedPsbtItem, decodedPsbtIndex) => (
+                <Text key={'feeRate_' + decodedPsbtIndex} text={decodedPsbtItem.feeRate.toString()} />
+              ))}
+              <Text text="sat/vB" color="textDim" />
+            </Section>
           )}
 
+
           <Section title="Features:">
-            <Row>
+            {/* <Row>
               {txInfo.decodedPsbt.features.rbf ? (
                 <Text text="RBF" color="white" style={{ backgroundColor: 'green', padding: 5, borderRadius: 5 }} />
               ) : (
@@ -624,10 +731,24 @@ export default function SignPsbt({
                   style={{ backgroundColor: 'red', padding: 5, borderRadius: 5, textDecoration: 'line-through' }}
                 />
               )}
-            </Row>
+            </Row> */}
+            {(Array.isArray(txInfo.decodedPsbt) ? txInfo.decodedPsbt : [txInfo.decodedPsbt]).map((decodedPsbtItem, decodedPsbtIndex) => (
+              <Row key={'rbf_' + decodedPsbtIndex}>
+                {decodedPsbtItem.features.rbf ? (
+                  <Text text="RBF" color="white" style={{ backgroundColor: 'green', padding: 5, borderRadius: 5 }} />
+                ) : (
+                  <Text
+                    text="RBF"
+                    color="white"
+                    style={{ backgroundColor: 'red', padding: 5, borderRadius: 5, textDecoration: 'line-through' }}
+                  />
+                )}
+              </Row>
+            ))}
+
           </Section>
 
-          {isValidData && (
+          {/* {isValidData && (
             <Column gap="xl">
               <Column>
                 <Text text={`Inputs: (${txInfo.decodedPsbt.inputInfos.length})`} preset="bold" />
@@ -821,9 +942,210 @@ export default function SignPsbt({
                 </Card>
               </Column>
             </Column>
+          )} */}
+
+          {isValidData && (
+            <Column gap="xl">
+              <Column>
+                <Text text={`Inputs: (${Array.isArray(txInfo.decodedPsbt.inputInfos) ? txInfo.decodedPsbt.inputInfos.length : 1})`} preset="bold" />
+                <Card>
+                  <Column full justifyCenter>
+                    {(Array.isArray(txInfo.decodedPsbt) ? txInfo.decodedPsbt.map(p => p.inputInfos) : [txInfo.decodedPsbt.inputInfos]).flat().map((v, index) => {
+                      const isToSign = txInfo.toSignInputs.find((v) => v.index === index) ? true : false;
+                      console.log('//////////////////////////////')
+                      console.log((Array.isArray(txInfo.decodedPsbt) ? txInfo.decodedPsbt.map(p => p.inputInfos) : [txInfo.decodedPsbt.inputInfos]).flat())
+                      console.log('++++++++++++++++++++++++++++++++++++++++++++')
+                      console.log(v)
+                      const inscriptions = v.inscriptions;
+                      const atomicals_nft = v.atomicals.filter((v) => v.type === 'NFT');
+                      const atomicals_ft = v.atomicals.filter((v) => v.type === 'FT');
+                      return (
+                        <Row
+                          key={'output_' + index}
+                          style={index === 0 ? {} : { borderColor: colors.border, borderTopWidth: 1, paddingTop: 10 }}
+                          itemsCenter>
+                          <Column fullX>
+                            <Row fullX justifyBetween>
+                              <Column>
+                                <Row>
+                                  <AddressText address={v.address} color={isToSign ? 'white' : 'textDim'} />
+                                  {isToSign && (
+                                    <Row
+                                      style={{
+                                        borderWidth: 1,
+                                        borderColor: 'zky_primary',
+                                        borderRadius: 5,
+                                        padding: 2
+                                      }}>
+                                      <Text text="to sign" color="zky_primary" size="xs" />
+                                    </Row>
+                                  )}
+                                </Row>
+                              </Column>
+                              <Row>
+                                <Text text={`${satoshisToAmount(v.value)}`} color={isToSign ? 'white' : 'textDim'} />
+                                <Text text="BTC" color="textDim" />
+                              </Row>
+                            </Row>
+
+                            {inscriptions.length > 0 && (
+                              <Row>
+                                <Column justifyCenter>
+                                  <Text
+                                    text={`Inscriptions (${inscriptions.length})`}
+                                    color={isToSign ? 'white' : 'textDim'}
+                                  />
+                                  <Row overflowX gap="lg" style={{ width: 280 }} pb="lg">
+                                    {inscriptions.map((w) => (
+                                      <InscriptionPreview
+                                        key={w.inscriptionId}
+                                        data={Array.isArray(txInfo.decodedPsbt) ? txInfo.decodedPsbt.filter(d => d.inscriptions[w.inscriptionId])[0].inscriptions[w.inscriptionId] : txInfo.decodedPsbt.inscriptions[w.inscriptionId]}
+                                        preset="small"
+                                        onClick={() => {
+                                          window.open(w.preview);
+                                        }}
+                                      />
+                                    ))}
+                                  </Row>
+                                </Column>
+                              </Row>
+                            )}
+
+                            {atomicals_nft.length > 0 && (
+                              <Row>
+                                <Column justifyCenter>
+                                  <Text
+                                    text={`Atomicals NFT (${inscriptions.length})`}
+                                    color={isToSign ? 'white' : 'textDim'}
+                                  />
+                                  <Row overflowX gap="lg" style={{ width: 280 }} pb="lg">
+                                    {atomicals_nft.map((w) => (
+                                      <AtomicalsNFTPreview
+                                        key={w.atomicalId}
+                                        data={w as any}
+                                        preset="small"
+                                        onClick={() => {
+                                          window.open(w.preview);
+                                        }}
+                                      />
+                                    ))}
+                                  </Row>
+                                </Column>
+                              </Row>
+                            )}
+
+                            {atomicals_ft.length > 0 && (
+                              <Row>
+                                <Column justifyCenter>
+                                  <Text text={'ARC20'} color={isToSign ? 'white' : 'textDim'} />
+                                  <Row overflowX gap="lg" style={{ width: 280 }} pb="lg">
+                                    {atomicals_ft.map((w) => (
+                                      <Arc20PreviewCard key={w.ticker} ticker={w.ticker || ''} amt={v.value} />
+                                    ))}
+                                  </Row>
+                                </Column>
+                              </Row>
+                            )}
+                          </Column>
+                        </Row>
+                      );
+                    })}
+                  </Column>
+                </Card>
+              </Column>
+
+              {/* <Column>
+                <Text text={`Outputs: (${Array.isArray(txInfo.decodedPsbt.outputInfos) ? txInfo.decodedPsbt.outputInfos.length : 1})`} preset="bold" />
+                <Card>
+                  <Column full justifyCenter gap="lg">
+                    {(Array.isArray(txInfo.decodedPsbt.outputInfos) ? txInfo.decodedPsbt.outputInfos : [txInfo.decodedPsbt.outputInfos]).map((v, index) => {
+                      const isMyAddress = v.address == currentAccount.address;
+                      const inscriptions = v.inscriptions;
+                      const atomicals_nft = v.atomicals.filter((v) => v.type === 'NFT');
+                      const atomicals_ft = v.atomicals.filter((v) => v.type === 'FT');
+                      return (
+                        <Column
+                          key={'output_' + index}
+                          style={index === 0 ? {} : { borderColor: colors.border, borderTopWidth: 1, paddingTop: 10 }}>
+                          <Column>
+                            <Row justifyBetween>
+                              <AddressText address={v.address} color={isMyAddress ? 'white' : 'textDim'} />
+                              <Row>
+                                <Text text={`${satoshisToAmount(v.value)}`} color={isMyAddress ? 'white' : 'textDim'} />
+                                <Text text="BTC" color="textDim" />
+                              </Row>
+                            </Row>
+                          </Column>
+
+                          {canChanged === false && inscriptions.length > 0 && (
+                            <Row>
+                              <Column justifyCenter>
+                                <Text
+                                  text={`Inscriptions (${inscriptions.length})`}
+                                  color={isMyAddress ? 'white' : 'textDim'}
+                                />
+                                <Row overflowX gap="lg" style={{ width: 280 }} pb="lg">
+                                  {inscriptions.map((w) => (
+                                    <InscriptionPreview
+                                      key={w.inscriptionId}
+                                      data={txInfo.decodedPsbt.inscriptions[w.inscriptionId]}
+                                      preset="small"
+                                      onClick={() => {
+                                        window.open(w.preview);
+                                      }}
+                                    />
+                                  ))}
+                                </Row>
+                              </Column>{' '}
+                            </Row>
+                          )}
+
+                          {atomicals_nft.length > 0 && (
+                            <Row>
+                              <Column justifyCenter>
+                                <Text
+                                  text={`Atomicals NFT (${inscriptions.length})`}
+                                  color={isMyAddress ? 'white' : 'textDim'}
+                                />
+                                <Row overflowX gap="lg" style={{ width: 280 }} pb="lg">
+                                  {atomicals_nft.map((v) => (
+                                    <AtomicalsNFTPreview
+                                      key={v.atomicalId}
+                                      data={v as any}
+                                      preset="small"
+                                      onClick={() => {
+                                        window.open(v.preview);
+                                      }}
+                                    />
+                                  ))}
+                                </Row>
+                              </Column>{' '}
+                            </Row>
+                          )}
+
+                          {atomicals_ft.length > 0 && (
+                            <Row>
+                              <Column justifyCenter>
+                                <Text text={'ARC20'} color={isMyAddress ? 'white' : 'textDim'} />
+                                <Row overflowX gap="lg" style={{ width: 280 }} pb="lg">
+                                  {atomicals_ft.map((w) => (
+                                    <Arc20PreviewCard key={w.ticker} ticker={w.ticker || ''} amt={v.value} />
+                                  ))}
+                                </Row>
+                              </Column>
+                            </Row>
+                          )}
+                        </Column>
+                      );
+                    })}
+                  </Column>
+                </Card>
+              </Column> */}
+            </Column>
           )}
 
-          <Section title="PSBT Data:">
+
+          {/* <Section title="PSBT Data:">
             <Text text={shortAddress(txInfo.psbtHex, 10)} />
             <Row
               itemsCenter
@@ -835,7 +1157,7 @@ export default function SignPsbt({
               <Text text={`${txInfo.psbtHex.length / 2} bytes`} color="textDim" />
               <Icon icon="copy" color="textDim" />
             </Row>
-          </Section>
+          </Section> */}
         </Column>
       </Content>
 

@@ -130,10 +130,32 @@ class ProviderController extends BaseController {
     const { data: { params: { toAddress, satoshis } } } = req;
   }])
     sendInscription = async ({approvalRes:{psbtHex}}) => {
-      const psbt = bitcoin.Psbt.fromHex(psbtHex);
-      const tx = psbt.extractTransaction();
-      const rawtx = tx.toHex()
-      return await wallet.pushTx(rawtx)
+      function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+      }
+
+
+      if (Array.isArray(psbtHex) && psbtHex.length > 1) {
+        console.log('isArray...')
+        const results: any = [];
+        for (const p of psbtHex) {
+          const psbt = bitcoin.Psbt.fromHex(p);
+          const tx = psbt.extractTransaction();
+          console.log('tx:-----')
+          console.log(tx)
+          const rawtx = tx.toHex()
+          const res = await wallet.pushTx(rawtx)
+          console.log('paso la primer')
+          await sleep(60000); // Espera durante 2 segundos
+          results.push(res)
+        }
+        return results;
+      } else {
+        const psbt = bitcoin.Psbt.fromHex(psbtHex);
+        const tx = psbt.extractTransaction();
+        const rawtx = tx.toHex()
+        return await wallet.pushTx(rawtx)
+      }
     }
 
   @Reflect.metadata('APPROVAL', ['SignText', () => {
@@ -169,30 +191,30 @@ class ProviderController extends BaseController {
 
         return signaturesArray
       }
-    @Reflect.metadata('APPROVAL', ['SignTexts', () => {
-      // todo check text
-    }])
-      sendMultiSwap = async ({ data: { params: { messages, type } } }) => {
-        const signaturesArray: string[] = []
+    // @Reflect.metadata('APPROVAL', ['SignTexts', () => {
+    //   // todo check text
+    // }])
+    //   sendMultiSwap = async ({ data: { params: { messages, type } } }) => {
+    //     const signaturesArray: string[] = []
 
-        // todo: add screen to confirm tx
-        if (type === 'bip322-simple') {
-          await Promise.all(messages.map(async (text) => {
-            const sig = await wallet.signBIP322Simple(text)
-            signaturesArray.push(sig)
-          }))
-        } else {
-          await Promise.all(messages.map(async (text) => {
-            const sig = await wallet.signMessage(text)
-            signaturesArray.push(sig)
-          }))
-        }
-        return await Promise.all(signaturesArray.map(sig =>
-        //build tx
-        // wallet.enqueueTransferTxn(tx))
-          console.log(sig)
-        ))
-      }
+    //     // todo: add screen to confirm tx
+    //     if (type === 'bip322-simple') {
+    //       await Promise.all(messages.map(async (text) => {
+    //         const sig = await wallet.signBIP322Simple(text)
+    //         signaturesArray.push(sig)
+    //       }))
+    //     } else {
+    //       await Promise.all(messages.map(async (text) => {
+    //         const sig = await wallet.signMessage(text)
+    //         signaturesArray.push(sig)
+    //       }))
+    //     }
+    //     return await Promise.all(signaturesArray.map(sig =>
+    //     //build tx
+    //     wallet.enqueueTxHash())
+    //       console.log(sig)
+    //     ))
+    //   }
 
     // @Reflect.metadata('APPROVAL', ['SignTx', () => {
     //   // todo check

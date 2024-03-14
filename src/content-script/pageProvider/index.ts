@@ -246,6 +246,7 @@ export class ZkyProvider extends EventEmitter {
   };
 
   sendInscription = async (toAddress: string, inscriptionId: string | string[], options?: { feeRate: number }) => {
+    console.log('sending.....', inscriptionId)
     return this._request({
       method: 'sendInscription',
       params: {
