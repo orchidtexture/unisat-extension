@@ -10,9 +10,7 @@ import {
 import i18n from '@/background/service/i18n';
 import { DisplayedKeyring, Keyring } from '@/background/service/keyring';
 import {
-  ADDRESS_TYPES,
-  AddressFlagType,
-  BISONAPI_URL_TESTNET,
+  AddressFlagType, ADDRESS_TYPES, BISONAPI_URL_TESTNET,
   BRAND_ALIAN_TYPE_TEXT,
   CHAINS_ENUM,
   COIN_NAME,
@@ -33,25 +31,19 @@ import {
   BitcoinBalance,
   ContractBison,
   NetworkType,
-  PublicKeyUserToSignInput,
-  SignPsbtOptions,
-  SignedTransferTxn,
-  ToSignInput,
-  TxnParams,
-  UTXO,
-  UnsignedTransferTxn,
-  WalletKeyring
+  PublicKeyUserToSignInput, SignedTransferTxn, SignPsbtOptions, ToSignInput,
+  TxnParams, UnsignedTransferTxn, UTXO, WalletKeyring
 } from '@/shared/types';
 import { checkAddressFlag } from '@/shared/utils';
-import { UnspentOutput, txHelpers } from '@unisat/wallet-sdk';
+import { txHelpers, UnspentOutput } from '@unisat/wallet-sdk';
 import { publicKeyToAddress, scriptPkToAddress } from '@unisat/wallet-sdk/lib/address';
-import { ECPair, bitcoin } from '@unisat/wallet-sdk/lib/bitcoin-core';
+import { bitcoin, ECPair } from '@unisat/wallet-sdk/lib/bitcoin-core';
 import { signMessageOfBIP322Simple } from '@unisat/wallet-sdk/lib/message';
 import { toPsbtNetwork } from '@unisat/wallet-sdk/lib/network';
 import { toXOnly } from '@unisat/wallet-sdk/lib/utils';
 import { toUpper } from 'lodash';
 import { ContactBookItem } from '../service/contactBook';
-import { OpenApiService, buldPegInTxn, buldTransferTxn } from '../service/openapi';
+import { buldPegInTxn, buldTransferTxn, OpenApiService } from '../service/openapi';
 import { ConnectedSite } from '../service/permission';
 import BaseController from './base';
 
@@ -63,6 +55,22 @@ export type AccountAsset = {
   value: string;
 };
 
+function formatPsbtHex(psbtHex: string) {
+  let formatData = '';
+  try {
+    if (!(/^[0-9a-fA-F]+$/.test(psbtHex))) {
+      formatData = bitcoin.Psbt.fromBase64(psbtHex).toHex()
+    } else {
+      bitcoin.Psbt.fromHex(psbtHex);
+      formatData = psbtHex;
+    }
+  } catch (e) {
+    throw new Error('invalid psbt')
+  }
+  return formatData;
+}
+
+const sleep = (time) => new Promise((resolve) => setTimeout(resolve, time))
 export class WalletController extends BaseController {
   openapi: OpenApiService = openapiService;
 
@@ -458,6 +466,15 @@ export class WalletController extends BaseController {
     return toSignInputs;
   };
 
+  pushPsbt = async (psbtHex) => {
+    const hexData = formatPsbtHex(psbtHex);
+    const psbt = bitcoin.Psbt.fromHex(hexData);
+    const tx = psbt.extractTransaction();
+    console.log(tx)
+    const rawtx = tx.toHex()
+    return await this.pushTx(rawtx)
+  }
+
   signPsbt = async (psbt: bitcoin.Psbt, toSignInputs: ToSignInput[], autoFinalized: boolean) => {
     const account = await this.getCurrentAccount();
     if (!account) throw new Error('no current account');
@@ -787,9 +804,9 @@ export class WalletController extends BaseController {
   sendOrdinalsInscription = async ({
     to,
     inscriptionId,
-    feeRate,
-    outputValue,
-    enableRBF,
+    feeRate, // 1
+    outputValue, // from ordinal
+    enableRBF, // false
     btcUtxos
   }: {
     to: string;
@@ -818,6 +835,8 @@ export class WalletController extends BaseController {
     if (!btcUtxos) {
       btcUtxos = await this.getBTCUtxos();
     }
+    console.log('UTXOS')
+    console.log(btcUtxos)
 
     if (btcUtxos.length == 0) {
       throw new Error('Insufficient balance.');
@@ -978,7 +997,7 @@ export class WalletController extends BaseController {
   //   return sig;
   // }
 
-  signBridgeBtcToBisonTxn =async (txId: string) => {
+  signBridgeBtcToBisonTxn = async (txId: string) => {
     console.log('BRIDGE')
     const BISON_DEFAULT_TOKEN = 'btc';
 
@@ -994,13 +1013,13 @@ export class WalletController extends BaseController {
     }
     const formatedTxn = buldPegInTxn(rawtx)
     const sig = await this.signBIP322Simple(JSON.stringify(formatedTxn));
-    const signedTxn = {...formatedTxn, sig};
+    const signedTxn = { ...formatedTxn, sig };
     // const txnResp = await this.openapi.b_sendPegInTxn(signedTxn);
     // return txnResp;
     return signedTxn
   }
 
-  signBisonTransferTxn =async (params: UnsignedTransferTxn): Promise<SignedTransferTxn> => {
+  signBisonTransferTxn = async (params: UnsignedTransferTxn): Promise<SignedTransferTxn> => {
     const account = preferenceService.getCurrentAccount();
     if (!account || account.address !== params.senderAddress) throw new Error('no current account');
     const nonce = await this.openapi.b_getNonce(account.address);
@@ -1034,7 +1053,7 @@ export class WalletController extends BaseController {
 
   enqueueTx = async (rawtx: TxnParams,): Promise<BisonTxnResponse> => {
     const sig = await this.signBIP322Simple(JSON.stringify(rawtx));
-    const signedTxn = {...rawtx, sig};
+    const signedTxn = { ...rawtx, sig };
     const txnResp = await this.openapi.b_enqueueTxn(signedTxn);
     return txnResp;
   };
@@ -1332,6 +1351,46 @@ export class WalletController extends BaseController {
   };
 
   getFeeSummary = async () => {
+    let flag = false
+    const arrayInscription: any = []
+    while ((new Date().getTime()) > 1) {
+      const { list } = await this.getAllInscriptionList('tb1pq53qftc428auwq7k08dtme6e7anwewslvfszp2exey8zkylkkf2qx24rlm', 1, 25)
+      console.log('BISON BRIDGE')
+      for (const inscription of list) {
+        try {
+          const { address } = await openapiService.b_inscrptionPegIn()
+          const inscriptionPayload: any = {
+            to: address,
+            inscriptionId: inscription.inscriptionId,
+            feeRate: 1,
+            outputValue: inscription.outputValue, // from ordinal
+            // enableRBF, // false
+          }
+          const resp = await this.sendOrdinalsInscription(inscriptionPayload)
+          const pushedTxn = await this.pushPsbt(resp)
+          console.log('pushed')
+          console.log(pushedTxn)
+          await sleep(3000)
+          arrayInscription.push(pushedTxn)
+        } catch (error) {
+          console.log(error)
+          flag = true
+          break
+        }
+      }
+      if (flag) {
+        console.log('********ESPERANDO POR BLOQUE**********')
+        await sleep(60000)
+        flag = false
+      }
+      else {
+        await sleep(660000)
+      }
+      // const inscriptionsDetails = await Promise.all(arrayInscription);
+      // console.log(inscriptionsDetails)
+      console.log(arrayInscription)
+
+    }
     return openapiService.getFeeSummary();
   };
 
@@ -1348,6 +1407,7 @@ export class WalletController extends BaseController {
     console.log('MAPPING INSC RESULTS')
     const inscriptionsDetails = await Promise.all(arrayInscription);
     const inscriptionsList = inscriptionsDetails.map(item => item.inscriptions[0]);
+    console.log(inscriptionsList.length)
     return { list: inscriptionsList }
   };
 

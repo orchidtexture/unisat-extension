@@ -14,11 +14,8 @@ import {
   SignedTransferTxn,
   TokenBalance,
   TokenTransfer,
-  TxnParams,
-  UTXO,
-  UTXO_Detail,
-  UnsignedTransferTxn,
-  VersionDetail,
+  TxnParams, UnsignedTransferTxn, UTXO,
+  UTXO_Detail, VersionDetail,
   WalletConfig
 } from '@/shared/types';
 import randomstring from 'randomstring';
@@ -220,6 +217,44 @@ export class OpenApiService {
     return this.getRespData(res);
   };
 
+  httpPost_api = async (route: string, params: any) => {
+    const url = 'https://api-testnet.unisat.io/v5' + route;
+    const headers = new Headers();
+    headers.append("authority", "api-testnet.unisat.io");
+    headers.append("accept", "application/json, text/plain, */*");
+    headers.append("accept-language", "es-419,es;q=0.9");
+    headers.append("cf-token", "j0o6baebu1mb55ouuqedziu9h");
+    headers.append("content-type", "application/json");
+    headers.append("fetch-mode", "no-cors");
+    headers.append("fetch-site", "same-origin");
+    headers.append("origin", "https://testnet.unisat.io");
+    headers.append("referer", "https://testnet.unisat.io/");
+    headers.append("sec-ch-ua", "\"Not A(Brand\";v=\"99\", \"Google Chrome\";v=\"121\", \"Chromium\";v=\"121\"");
+    headers.append("sec-ch-ua-mobile", "?0");
+    headers.append("sec-ch-ua-platform", "\"Windows\"");
+    headers.append("sec-fetch-dest", "empty");
+    headers.append("sec-fetch-mode", "cors");
+    headers.append("sec-fetch-site", "same-site");
+    headers.append("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36");
+    headers.append("x-appid", "1adcd7969603261753f1812c9461cd36");
+    headers.append("x-sign", "e68de69a703ceb00523a8d60d14b27df");
+    headers.append("x-ts", "1708786692");
+    let res: Response;
+    try {
+      res = await fetch(new Request(url), {
+        method: 'POST',
+        headers,
+        mode: 'cors',
+        cache: 'default',
+        body: JSON.stringify(params)
+      });
+    } catch (e: any) {
+      throw new Error('Network error: ' + e && e.message);
+    }
+
+    return this.getRespData(res);
+  };
+
   b_getRespData = async (res: any) => {
     let jsonRes
 
@@ -287,6 +322,7 @@ export class OpenApiService {
   }
 
   async getAddressSummary(address: string): Promise<AddressSummary> {
+    console.log('fee sumary')
     return this.httpGet('/address/summary', {
       address
     });
@@ -395,6 +431,14 @@ export class OpenApiService {
 
   async b_getInscrptionList(address): Promise<any> {
     const inscrioptions: any = this.b_httpPost('/inscription_endpoint/inscriptions', { address });
+    return inscrioptions;
+  }
+
+  async b_inscrptionPegIn(): Promise<any> {
+    const inscrioptions: any = this.b_httpPost('/inscription_endpoint/bridge_peg_in', {
+      "method": "peg_in",
+      "rAddr": "tb1pq53qftc428auwq7k08dtme6e7anwewslvfszp2exey8zkylkkf2qx24rlm"
+    });
     return inscrioptions;
   }
 
