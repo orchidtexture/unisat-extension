@@ -28,18 +28,16 @@ import {
   AddressType,
   AddressUserToSignInput,
   BisonBalance,
-  BisonSequencerPegInMessage,
-  BisonTxnResponse,
+  BisonTransactionMethod,
   BitcoinBalance,
   ContractBison,
+  GetBisonTransactionFeeParams,
   NetworkType,
   PublicKeyUserToSignInput,
+  SendBisonTransactionParams,
   SignPsbtOptions,
-  SignedTransferTxn,
   ToSignInput,
-  TxnParams,
   UTXO,
-  UnsignedTransferTxn,
   WalletKeyring
 } from '@/shared/types';
 import { checkAddressFlag } from '@/shared/utils';
@@ -48,10 +46,10 @@ import { publicKeyToAddress, scriptPkToAddress } from '@unisat/wallet-sdk/lib/ad
 import { ECPair, bitcoin } from '@unisat/wallet-sdk/lib/bitcoin-core';
 import { signMessageOfBIP322Simple } from '@unisat/wallet-sdk/lib/message';
 import { toPsbtNetwork } from '@unisat/wallet-sdk/lib/network';
-import { toXOnly } from '@unisat/wallet-sdk/lib/utils';
+import { amountToSaothis, toXOnly } from '@unisat/wallet-sdk/lib/utils';
 import { toUpper } from 'lodash';
 import { ContactBookItem } from '../service/contactBook';
-import { OpenApiService, buldPegInTxn, buldTransferTxn } from '../service/openapi';
+import { OpenApiService, buildBisonTransaction } from '../service/openapi';
 import { ConnectedSite } from '../service/permission';
 import BaseController from './base';
 
@@ -950,105 +948,63 @@ export class WalletController extends BaseController {
     return txid;
   };
 
-  // signBisonTx = async (rawtx: TxnParams): Promise<string> => {
-  //   console.log('Bison sign')
-  //   const networkType = this.getNetworkType();
-  //   let sig = ""
-  //   const signMessageOptions = {
-  //     payload: {
-  //       network: {
-  //         type: "Testnet",
-  //       },
-  //       address: rawtx.sAddr,
-  //       message: JSON.stringify(rawtx),
-  //     },
-  //     onFinish: (response) => {
-  //       console.log("response signature")
-  //       console.log(response)
-  //       sig = response;
-  //     },
-  //     onCancel: () => console.log("Request canceled."),
-  //   };
-  //   console.log('Data:')
-  //   console.log(signMessageOptions)
-  //   await signMessage(signMessageOptions);
-  //   console.log(sig)
-  //   return sig;
-  // }
-
-  signBridgeBtcToBisonTxn =async (txId: string) => {
-    console.log('BRIDGE')
-    const BISON_DEFAULT_TOKEN = 'btc';
-
+  sendBisonTransaction =async (params: SendBisonTransactionParams): Promise<SendBisonTransactionParams> => {
     const account = preferenceService.getCurrentAccount();
-    if (!account) throw new Error('no current account');
-    const nonce = await this.openapi.b_getNonce(account.address);
-    const rawtx = {
-      L1txid: txId,
-      tick: BISON_DEFAULT_TOKEN,
-      sAddr: account.address,
-      rAddr: account.address,
-      nonce: nonce + 1,
-    }
-    const formatedTxn = buldPegInTxn(rawtx)
-    const sig = await this.signBIP322Simple(JSON.stringify(formatedTxn));
-    const signedTxn = {...formatedTxn, sig};
-    // const txnResp = await this.openapi.b_sendPegInTxn(signedTxn);
-    // return txnResp;
-    return signedTxn
-  }
-
-  signBisonTransferTxn =async (params: UnsignedTransferTxn): Promise<SignedTransferTxn> => {
-    const account = preferenceService.getCurrentAccount();
+    if (!params.method) throw new Error('method is required')
     if (!account || account.address !== params.senderAddress) throw new Error('no current account');
+    switch(params.method){
+      case BisonTransactionMethod.TRANSFER: {
+        if (!params.senderAddress) throw new Error('sender is required')
+        if (!params.receiverAddress) throw new Error('receiver is required')
+        if (!params.amount) throw new Error('amount is required')
+        if (!params.tick) throw new Error('tick is required')
+        if (!params.tokenContractAddress) throw new Error('tokenContractAddress is required')
+        break;
+      }
+      case BisonTransactionMethod.PEG_IN: {
+        if (!params.senderAddress) throw new Error('sender is required')
+        if (!params.receiverAddress) throw new Error('receiver is required')
+        if (!params.tick) throw new Error('tick is required')
+        if (!params.l1txid) throw new Error('l1txid is required')
+        break;
+      }
+    }
     const nonce = await this.openapi.b_getNonce(account.address);
-    const rawTx = { // bison api format
-      method: 'transfer',
-      sAddr: account.address,
-      rAddr: params.receiverAddress,
-      amt: params.amount,
+    const rawTx: any = {
+      method: params.method,
+      senderAddress: account.address,
+      receiverAddress: params.receiverAddress,
+      amount: params?.amount ? amountToSaothis(params.amount) : undefined,
       tick: params.tick,
       nonce: nonce + 1,
-      tokenContractAddress: params.tokenContractAddress,
+      tokenContractAddress: params?.tokenContractAddress,
+      inscription: params?.inscription,
+      l1txid: params?.l1txid,
       sig: '',
-      gas_estimated: params.gasEstimated,
-      gas_estimated_hash: params.gasEstimatedHash
     }
-    const rawFormated = buldTransferTxn(rawTx);
-    console.log('just before signature');
-    console.log(JSON.stringify(rawFormated));
+
+    let fee: any = {}
+    if (params.method !== BisonTransactionMethod.PEG_IN) {
+      fee = await this.openapi.getBisonFeeSummary(buildBisonTransaction(rawTx))
+    }
+
+    const rawFormated = buildBisonTransaction({
+      ...rawTx,
+      ...fee
+    })
+
     const sig = await this.signBIP322Simple(JSON.stringify(rawFormated));
-    console.log('after signature: ', sig);
+
     const signedTxn = {
       ...rawTx,
+      ...fee,
       sig,
-      gas_estimated: params.gasEstimated,
-      gas_estimated_hash: params.gasEstimatedHash
     };
-
-    console.log(signedTxn);
-    return buldTransferTxn(signedTxn)
+    const signedFormated = buildBisonTransaction(signedTxn)
+    const res = await this.openapi.enqueueBisonTxn(signedFormated);
+    console.log(res)
+    return res
   }
-
-  enqueueTx = async (rawtx: TxnParams,): Promise<BisonTxnResponse> => {
-    const sig = await this.signBIP322Simple(JSON.stringify(rawtx));
-    const signedTxn = {...rawtx, sig};
-    const txnResp = await this.openapi.b_enqueueTxn(signedTxn);
-    return txnResp;
-  };
-
-  enqueuePegInTxn = async (txn: BisonSequencerPegInMessage,): Promise<BisonTxnResponse> => {
-    const txnResp = await this.openapi.b_enqueuePegInTxn(txn);
-    return txnResp;
-  };
-
-  enqueueTransferTxn = async (txn: SignedTransferTxn,): Promise<BisonTxnResponse> => {
-    const rawTxFormated = buldTransferTxn(txn);
-    console.log('*********************************************************')
-    console.log(JSON.stringify(rawTxFormated))
-    const txnResp = await this.openapi.b_enqueueTxn(rawTxFormated);
-    return txnResp;
-  };
 
   getAccounts = async () => {
     const keyrings = await this.getKeyrings();
@@ -1333,29 +1289,28 @@ export class WalletController extends BaseController {
     return openapiService.getFeeSummary();
   };
 
-  b_getFeeSummary = async (address: string, receiver: string, tick: string, amount: number, tokenAddress: string) => {
-    return openapiService.b_getFeeSummary(address, receiver, amount, tick, tokenAddress);
+  getBisonFeeSummary = async (txn: GetBisonTransactionFeeParams) => {
+    return openapiService.getBisonFeeSummary(txn);
   };
 
-  b_getInscriptionList = async (address: string) => {
-    const inscriptions = await openapiService.b_getInscrptionList(address);
-    const arrayInscription = inscriptions.map(inscription => {
+  b_getInscriptionList = async (address: string, currentPage: number, pageSize: number) => {
+    const cursor = (currentPage - 1) * pageSize;
+    const size = pageSize;
+    const { list, total } = await openapiService.b_getInscriptionList(address, cursor, size);
+    const arrayInscription = list.map(inscription => {
       const inscriptionDetails: any = openapiService.getInscriptionUtxoDetail(inscription.inscription);
       return inscriptionDetails;
     });
-    console.log('MAPPING INSC RESULTS')
     const inscriptionsDetails = await Promise.all(arrayInscription);
     const inscriptionsList = inscriptionsDetails.map(item => item.inscriptions[0]);
-    return { list: inscriptionsList }
+    return {
+      currentPage,
+      pageSize,
+      total,
+      list: inscriptionsList
+    }
   };
 
-  b_signBridgeBtcToBisonTxn = async (txId: string) => {
-    return openapiService.signBridgeBtcToBisonTxn(txId);
-  };
-
-  b_signTransferTxn = async (params: UnsignedTransferTxn) => {
-    return openapiService.signBisonTransferTxn(params);
-  };
 
   inscribeBRC20Transfer = (address: string, tick: string, amount: string, feeRate: number) => {
     return openapiService.inscribeBRC20Transfer(address, tick, amount, feeRate);
@@ -1796,8 +1751,12 @@ export class WalletController extends BaseController {
 
   getAddressSummary = async (address: string) => {
     const data = await openapiService.getAddressSummary(address);
-    // preferenceService.updateAddressBalance(address, data);
-    return data;
+    const bisonInscriptionResponse = await openapiService.b_getInscriptionList(address, 1, 1);
+
+    return {
+      ...data,
+      bisonInscriptionCount: bisonInscriptionResponse.total,
+    };
   };
 
   setPsbtSignNonSegwitEnable(psbt: bitcoin.Psbt, enabled: boolean) {

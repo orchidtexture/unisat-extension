@@ -284,7 +284,7 @@ function BisonTab() {
     },
     {
       key: BisonAssetTabKey.INSCRIPTIONS,
-      label: 'INSCRIPTIONS',
+      label: `INSCRIPTIONS (${addressSummary.bisonInscriptionCount})`,
       children: <BisonInscriptionList />
     }
   ];
@@ -446,16 +446,15 @@ function BisonInscriptionList() {
 
   const fetchData = async () => {
     try {
-      const { list } = await wallet.b_getInscriptionList(
+      const { list, total } = await wallet.b_getInscriptionList(
         currentAccount.address,
+        pagination.currentPage,
+        pagination.pageSize
       );
       setBisonInscriptions(list);
-      setTotal(list.length);
+      setTotal(total);
     } catch (e) {
-      console.log(e)
       tools.toastError((e as Error).message);
-    } finally {
-      // tools.showLoading(false);
     }
   };
 
@@ -488,7 +487,7 @@ function BisonInscriptionList() {
             data={data}
             preset="medium"
             onClick={() => {
-              navigate('OrdinalsInscriptionScreen', { inscription: data, withSend: true });
+              navigate('BisonOrdinalsInscriptionScreen', { inscription: data, withSend: true });
             }}
           />
         ))}
@@ -519,7 +518,6 @@ function BRC20List() {
   const tools = useTools();
   const fetchData = async () => {
     try {
-      // tools.showLoading(true);
       const { list, total } = await wallet.getBRC20List(
         currentAccount.address,
         pagination.currentPage,
@@ -529,8 +527,6 @@ function BRC20List() {
       setTotal(total);
     } catch (e) {
       tools.toastError((e as Error).message);
-    } finally {
-      // tools.showLoading(false);
     }
   };
 
@@ -593,7 +589,6 @@ function BisonList() {
   const tools = useTools();
   const fetchData = async () => {
     try {
-      // tools.showLoading(true);
       const { list, total } = await wallet.getBisonList(
         currentAccount.address,
         pagination.currentPage,
@@ -601,11 +596,8 @@ function BisonList() {
       );
       setTokens(list);
       setTotal(total);
-      console.log(list);
     } catch (e) {
       tools.toastError((e as Error).message);
-    } finally {
-      // tools.showLoading(false);
     }
   };
 

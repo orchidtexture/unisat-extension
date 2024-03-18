@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { CHAINS_ENUM } from './constant';
 
 export enum AddressType {
@@ -339,6 +340,7 @@ export interface AddressSummary {
   atomicalsCount: number;
   brc20Count: number;
   arc20Count: number;
+  bisonInscriptionCount: number;
   loading?: boolean;
 }
 
@@ -364,68 +366,69 @@ export interface ContractsBisonResponse {
 export interface BalanceBisonResponse {
   balance: number;
 }
-export interface TxnParams {
-    method?: string;
-    sAddr: string;
-    rAddr: string;
-    amt?: number;
+export interface SendBisonTransactionParams {
+    method: BisonTransactionMethod;
+    senderAddress: string;
+    receiverAddress: string;
     tick: string;
-    nonce?: number;
+    amount?: number;
     tokenContractAddress?: string;
-    sig?: string;
-    gas_estimated?: number;
-    gas_estimated_hash?: string;
-    L1txid?: string;
-    inscriptionId?: string;
+    l1txid?: string;
+    inscription?: string;
 }
 
-export interface BisonSequencerPegInMessage {
-  method: string,
-  token: string,
-  L1txid: string,
-  sAddr: string,
-  rAddr: string,
-  nonce: number,
-  sig: string,
-}
-
-export interface SignedTransferTxn {
-  method: string,
-  tick: string,
-  sAddr: string,
-  rAddr: string,
-  nonce: number,
-  amt: number,
-  tokenContractAddress: string,
-  gas_estimated: number,
-  gas_estimated_hash: string,
-  sig: string,
-}
-
-export interface UnsignedTransferTxn {
-  senderAddress: string,
-  receiverAddress: string,
-  amount: number,
-  tokenContractAddress: string,
-  tick: string
-  gasEstimated: number,
-  gasEstimatedHash: string
-}
-
-export interface BisonGetFeeResponse {
-  method?: string;
-  sAddr: string;
-  rAddr: string;
-  amt: number;
+export interface GetBisonTransactionFeeParams {
+  method: BisonTransactionMethod;
+  senderAddress: string;
+  receiverAddress: string;
   tick: string;
-  nonce: number;
-  tokenContractAddress: string;
-  sig: string;
-  gas_estimated: number;
-  gas_estimated_hash: string;
+  nonce?: number;
+  amount?: number;
+  tokenContractAddress?: string;
+  l1txid?: string;
+  inscription?: string;
 }
+
+export interface GetBisonTransactionFeeResponse {
+  gasEstimated: number;
+  gasEstimatedHash: string;
+}
+
+export interface BuildBisonTxnParams {
+  method: BisonTransactionMethod;
+  senderAddress: string;
+  receiverAddress: string;
+  tick: string;
+  nonce?: number;
+  amount?: number;
+  tokenContractAddress?: string;
+  l1txid?: string;
+  inscription?: string;
+  inscriptionData?: Inscription;
+  sig?: string,
+  gasEstimated?: number,
+  gasEstimatedHash?: string,
+}
+
+export interface SendBisonTransactionResponse {
+    message: string,
+    txId: string
+}
+
+export enum BisonTransactionMethod {
+  TRANSFER = 'transfer',
+  INSCRIPTION_TRANSFER = 'inscription_transfer',
+  INSCRIPTION_SWAP = 'inscription_swap',
+  PEG_IN = 'peg_in'
+}
+
+export const BISON_DEFAULT_TOKEN = 'btc'
+
 export interface BisonTxnResponse {
   message: string;
   tx_hash: string;
 }
 
+export interface BisonInscriptionResponse {
+  inscription: string
+}

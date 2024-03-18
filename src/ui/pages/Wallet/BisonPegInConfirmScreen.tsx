@@ -1,10 +1,11 @@
 import { useLocation } from 'react-router-dom';
 
-import { BisonTxType, RawTxInfo } from '@/shared/types';
+import { BisonTransactionMethod, RawTxInfo } from '@/shared/types';
 import { Header } from '@/ui/components';
 import { usePushBitcoinTxCallback } from '@/ui/state/transactions/hooks';
 import { useLocationState } from '@/ui/utils';
 
+import { useAccountAddress } from '@/ui/state/accounts/hooks';
 import SignBIP322 from '../Approval/components/SignBison';
 import { useNavigate } from '../MainRoute';
 
@@ -17,12 +18,13 @@ export default function BisonPegInConfirmScreen() {
   const navigate = useNavigate();
   const pushBitcoinTx = usePushBitcoinTxCallback();
   const { state } = useLocation();
-  const { rawtx, inputAmount, toAddress, tick, fee } = state as {
+  const address = useAccountAddress()
+  const { rawtx, inputAmount, toAddress, tick, l1fee } = state as {
     rawtx: string;
     inputAmount: number;
     toAddress: string;
     tick: string;
-    fee: number;
+    l1fee: number;
   };
   return (
     <SignBIP322
@@ -34,10 +36,11 @@ export default function BisonPegInConfirmScreen() {
       />
       rawtx={rawtx}
       amount={inputAmount}
+      senderAddress={address}
       receiverAddress={toAddress}
       tick={tick}
-      fee={fee}
-      type={BisonTxType.PEG_IN}
+      l1fee={l1fee}
+      type={BisonTransactionMethod.PEG_IN}
       handleCancel={() => {
         window.history.go(-1);
       }}

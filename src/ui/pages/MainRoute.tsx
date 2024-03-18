@@ -33,8 +33,11 @@ import FaqTabScreen from './Main/FaqTabScreen';
 import SettingsTabScreen from './Main/SettingsTabScreen';
 import WalletTabScreen from './Main/WalletTabScreen';
 import WelcomeScreen from './Main/WelcomeScreen';
+import BisonOrdinalsInscriptionScreen from './Ordinals/BisonOrdinalsInscriptionScreen';
 import OrdinalsInscriptionScreen from './Ordinals/OrdinalsInscriptionScreen';
+import SendBisonOrdinalsInscriptionScreen from './Ordinals/SendBisonOrdinalsInscriptionScreen';
 import SendOrdinalsInscriptionScreen from './Ordinals/SendOrdinalsInscriptionScreen';
+import SignBisonOrdinalsTransactionScreen from './Ordinals/SignBisonOrdinalsTransactionScreen';
 import SignOrdinalsTransactionScreen from './Ordinals/SignOrdinalsTransactionScreen';
 import SplitOrdinalsInscriptionScreen from './Ordinals/SplitOrdinalsInscriptionScreen';
 import AddressTypeScreen from './Settings/AddressTypeScreen';
@@ -158,17 +161,26 @@ const routes = {
     path: '/ordinals/inscription-detail',
     element: <OrdinalsInscriptionScreen />
   },
-
+  BisonOrdinalsInscriptionScreen: {
+    path: '/ordinals/inscription-detail/bison',
+    element: <BisonOrdinalsInscriptionScreen />
+  },
   SendOrdinalsInscriptionScreen: {
     path: '/wallet/ordinals-tx/create',
     element: <SendOrdinalsInscriptionScreen />
   },
-
+  SendBisonOrdinalsInscriptionScreen: {
+    path: '/wallet/ordinals-tx/create/bison',
+    element: <SendBisonOrdinalsInscriptionScreen />
+  },
   SignOrdinalsTransactionScreen: {
     path: '/wallet/ordinals-tx/confirm',
     element: <SignOrdinalsTransactionScreen />
   },
-
+  SignBisonOrdinalsTransactionScreen: {
+    path: '/wallet/ordinals-tx/confirm/bison',
+    element: <SignBisonOrdinalsTransactionScreen />
+  },
   AtomicalsInscriptionScreen: {
     path: '/atomicals/inscription-detail',
     element: <AtomicalsNFTScreen />
@@ -256,10 +268,6 @@ const routes = {
     path: '/test',
     element: <TestScreen />
   },
-  // MoonPayScreen: {
-  //   path: '/moonpay',
-  //   element: <MoonPayScreen />
-  // },
   SplitOrdinalsInscriptionScreen: {
     path: '/wallet/split-tx/create',
     element: <SplitOrdinalsInscriptionScreen />

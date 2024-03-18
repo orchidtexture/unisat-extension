@@ -20,16 +20,13 @@ import { useNavigate } from '../MainRoute';
 
 export default function BisonPegInScreen() {
   const bisonBTCVaultAddress = 'tb1p9fnmrzh5kyxxfxy7gsw08c43846vd44v4mghhlkjj0se38emywgq5myfqv'; // TODO: handle better (not hardcoded)
-  // const networkType = wallet.getNetworkType();
   const accountBalance = useAccountBalance();
   const safeBalance = useSafeBalance();
   const navigate = useNavigate();
   const bitcoinTx = useBitcoinTx();
-  // const currentAccount = useCurrentAccount();
   const [inputAmount, setInputAmount] = useState(
     bitcoinTx.toSatoshis > 0 ? satoshisToAmount(bitcoinTx.toSatoshis) : ''
   );
-  // const pushBitcoinTx = usePushBitcoinTxCallback();
   const [disabled, setDisabled] = useState(true);
   const toInfo = {
     address: bisonBTCVaultAddress,
@@ -102,10 +99,6 @@ export default function BisonPegInScreen() {
 
     prepareSendBTC({ toAddressInfo: toInfo, toAmount: toSatoshis, feeRate, enableRBF })
       .then((data) => {
-        // if (data.fee < data.estimateFee) {
-        //   setError(`Network fee must be at leat ${data.estimateFee}`);
-        //   return;
-        // }
         setFee(data.fee);
         setRawTxInfo(data);
         console.log(data);
@@ -130,7 +123,7 @@ export default function BisonPegInScreen() {
         inputAmount: amountToSatoshis(inputAmount),
         toAddress: toInfo.address,
         tick: 'btc',
-        fee: fee
+        l1fee: fee
       });
     } else {
       navigate('TxFailScreen', { error });

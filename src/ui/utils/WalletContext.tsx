@@ -12,23 +12,23 @@ import {
   AppSummary,
   Arc20Balance,
   BisonBalance,
-  BisonSequencerPegInMessage,
-  BisonTxnResponse,
   BitcoinBalance,
   DecodedPsbt,
   FeeSummary,
+  GetBisonTransactionFeeParams,
+  GetBisonTransactionFeeResponse,
   InscribeOrder,
   Inscription,
   InscriptionSummary,
   NetworkType,
+  SendBisonTransactionParams,
+  SendBisonTransactionResponse,
   SignPsbtOptions,
-  SignedTransferTxn,
   TokenBalance,
   TokenTransfer,
   TxHistoryItem,
   UTXO,
   UTXO_Detail,
-  UnsignedTransferTxn,
   VersionDetail,
   WalletConfig,
   WalletKeyring
@@ -193,14 +193,14 @@ export interface WalletController {
 
   setAccountAlianName(account: Account, name: string): Promise<Account>;
   getFeeSummary(): Promise<FeeSummary>;
-  b_getFeeSummary(address: string, receiver: string, tick: string, amount: number, tokenAddress: string): Promise<any>;
-  b_signBridgeBtcToBisonTxn(txId: string): Promise<any>;
-  b_signTransferTxn(params: UnsignedTransferTxn): Promise<SignedTransferTxn>;
+  getBisonFeeSummary(txn: GetBisonTransactionFeeParams): Promise<GetBisonTransactionFeeResponse>;
+  sendBisonTransaction(params: SendBisonTransactionParams): Promise<SendBisonTransactionResponse>;
   b_getInscriptionList(
     address: string,
-  ): Promise<{list: Inscription[] }>;
-  enqueuePegInTxn(txn: BisonSequencerPegInMessage): Promise<BisonTxnResponse>;
-  enqueueTransferTxn(txn: SignedTransferTxn): Promise<BisonTxnResponse>;
+    currentPage: number,
+    pageSize: number
+
+  ): Promise<{currentPage: number; pageSize: number; total: number; list: Inscription[]; }>;
 
   setEditingKeyring(keyringIndex: number): Promise<void>;
   getEditingKeyring(): Promise<WalletKeyring>;

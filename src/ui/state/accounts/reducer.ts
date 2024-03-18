@@ -68,6 +68,7 @@ export const initialState: AccountsState = {
     atomicalsCount: 0,
     brc20Count: 0,
     arc20Count: 0,
+    bisonInscriptionCount: 0,
     loading: true
   }
 };
@@ -217,6 +218,7 @@ const slice = createSlice({
           btcSatoshis: 0,
           assetSatoshis: 0,
           inscriptionCount: 0,
+          bisonInscriptionCount: 0,
           atomicalsCount: 0,
           brc20Count: 0,
           arc20Count: 0

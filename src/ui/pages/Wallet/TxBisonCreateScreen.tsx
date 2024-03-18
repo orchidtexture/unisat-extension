@@ -1,10 +1,10 @@
 import wallet from '@/background/controller/wallet';
 import { COIN_DUST } from '@/shared/constant';
-import { BisonBalance, BisonGetFeeResponse, Inscription } from '@/shared/types';
+import { BisonBalance, BisonTransactionMethod, BuildBisonTxnParams, Inscription } from '@/shared/types';
 import { Button, Column, Content, Input, Row, Text } from '@/ui/components';
 import { useTools } from '@/ui/components/ActionComponent';
 import { useNavigate } from '@/ui/pages/MainRoute';
-import { useCurrentAccount } from '@/ui/state/accounts/hooks';
+import { useAccountAddress, useCurrentAccount } from '@/ui/state/accounts/hooks';
 import { useBitcoinTx, useFetchUtxosCallback } from '@/ui/state/transactions/hooks';
 import { colors } from '@/ui/theme/colors';
 import { amountToSatoshis, isValidAddress, satoshisToAmount } from '@/ui/utils';
@@ -22,8 +22,9 @@ export default function TxBisonCreateScreen() {
   const [autoAdjust, setAutoAdjust] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [disabled, setDisabled] = useState(false);
-  const [rawTx, setRawTx] = useState<BisonGetFeeResponse | null>(null)
+  const [rawTx, setRawTx] = useState<BuildBisonTxnParams | null>(null)
   const bitcoinTx = useBitcoinTx();
+  const address = useAccountAddress()
 
   const [inputAmount, setInputAmount] = useState(
     bitcoinTx.toSatoshis > 0 ? satoshisToAmount(bitcoinTx.toSatoshis) : ''
@@ -84,19 +85,16 @@ export default function TxBisonCreateScreen() {
       setLoading(false)
       return
     }
-    console.log('selectedBalance', selectedBalance)
-
-    wallet.b_getFeeSummary(
-      currentAccount.address,
-      toInfo.address,
-      selectedBalance?.ticker,
-      amountToSatoshis(inputAmount),
-      selectedBalance?.contractAddress
-    ).then(setRawTx)
-      .then(() => {
-        setDisabled(false)
-        setLoading(false)
-      })
+    setRawTx({
+      method: BisonTransactionMethod.TRANSFER,
+      senderAddress: address,
+      receiverAddress: toInfo.address,
+      tick: selectedBalance?.ticker,
+      amount: Number(inputAmount),
+      tokenContractAddress: selectedBalance.contractAddress
+    })
+    setLoading(false)
+    setDisabled(false)
   }, [toInfo, inputAmount, selectedBalance]);
 
 

@@ -1,21 +1,21 @@
-import React, { useEffect, useMemo, useState } from 'react';
-
-import { BisonSequencerPegInMessage, BisonTxType, DecodedPsbt, SignedTransferTxn, ToSignInput } from '@/shared/types';
+import { BISON_DEFAULT_TOKEN, BisonTransactionMethod, DecodedPsbt, Inscription, ToSignInput } from '@/shared/types';
 import { Button, Card, Column, Content, Footer, Header, Icon, Layout, Row, Text } from '@/ui/components';
-import { useTools } from '@/ui/components/ActionComponent';
 import { CopyableAddress } from '@/ui/components/CopyableAddress';
+import InscriptionPreview from '@/ui/components/InscriptionPreview';
 import { WarningPopover } from '@/ui/components/WarningPopover';
 import WebsiteBar from '@/ui/components/WebsiteBar';
 import { useNavigate } from '@/ui/pages/MainRoute';
+import { useAccountAddress } from '@/ui/state/accounts/hooks';
 import { usePushBitcoinTxCallback } from '@/ui/state/transactions/hooks';
 import { fontSizes } from '@/ui/theme/font';
 import { satoshisToAmount, useApproval, useWallet } from '@/ui/utils';
 import { LoadingOutlined } from '@ant-design/icons';
+import React, { useEffect, useMemo, useState } from 'react';
 
 interface Props {
   header?: React.ReactNode;
   rawtx?: string; // required in PEG IN
-  fee?: number; // required in PEG IN
+  l1fee?: number; // required in PEG IN
   senderAddress?: string; // required in TRANSFER
   receiverAddress?: string; // required in TRANSFER and PEG IN
   amount?: number; // required in TRANSFER and PEG IN
@@ -23,7 +23,9 @@ interface Props {
   gasEstimatedHash?: string; // required in TRANSFER
   tick?: string; // required in TRANSFER and PEG IN
   tokenContractAddress?: string; // required in TRANSFER
-  type: BisonTxType;
+  type: BisonTransactionMethod;
+  inscriptionId?: string; // required in INSCRIPTION_TRANSFER
+  inscriptionData?: Inscription; // required in INSCRIPTION_TRANSFER
   session?: {
     origin: string;
     icon: string;
@@ -42,12 +44,12 @@ function PegInDetailsComponent({
   receiverAddress,
   amount,
   tick,
-  fee
+  l1fee
 }: {
   receiverAddress: string;
   amount: number;
   tick: string | null;
-  fee: number;
+  l1fee: number;
 }) {
   return (
     <Card mt="lg" style={{ display: 'block' }}>
@@ -61,7 +63,7 @@ function PegInDetailsComponent({
       </Row>
       <Row justifyBetween my="xl">
         <Text text="L1 fee" color="textDim" />
-        <Text text={`${satoshisToAmount(fee)} ${tick?.toUpperCase()}`} size="sm" preset="bold" color="textDim" />
+        <Text text={`${satoshisToAmount(l1fee)} ${tick?.toUpperCase()}`} size="sm" preset="bold" color="textDim" />
       </Row>
       <Row justifyBetween my="xl">
         <Text text="Amount" color="textDim" />
@@ -75,7 +77,7 @@ function PegInDetailsComponent({
       <Row justifyBetween my="xl">
         <Text text="Total" color="textDim" />
         <Text
-          text={`${satoshisToAmount(amount + fee || 0)} ${tick?.toUpperCase()}`}
+          text={`${satoshisToAmount(amount + l1fee || 0)} ${tick?.toUpperCase()}`}
           size="sm"
           preset="bold"
           color="textDim"
@@ -85,18 +87,6 @@ function PegInDetailsComponent({
   );
 }
 
-function Section({ title, children }: { title: string; children?: React.ReactNode }) {
-  return (
-    <Column>
-      <Text text={title} preset="bold" />
-      <Card>
-        <Row full justifyBetween itemsCenter>
-          {children}
-        </Row>
-      </Card>
-    </Column>
-  );
-}
 
 interface TxInfo {
   changedBalance: number;
@@ -137,11 +127,11 @@ export default function SignBIP322({
   receiverAddress,
   amount,
   tick,
-  fee,
+  l1fee,
   tokenContractAddress,
-  gasEstimated,
-  gasEstimatedHash,
   type,
+  inscriptionId,
+  inscriptionData,
   session,
   handleCancel,
   handleConfirm
@@ -150,38 +140,60 @@ export default function SignBIP322({
   const navigate = useNavigate();
   const pushBitcoinTx = usePushBitcoinTxCallback();
   const [txInfo, setTxInfo] = useState<TxInfo>(initTxInfo);
-  const [signedTxn, setSignedTxn] = useState<BisonSequencerPegInMessage | null>(null);
-  const [signedTransferTxn, setSignedTransferTxn] = useState<SignedTransferTxn | null>(null);
-
+  const address = useAccountAddress();
   const wallet = useWallet();
+  const [bisonFee, setBisonFee] = useState<number>(0)
   const [loading, setLoading] = useState(true);
-
-  const tools = useTools();
-
   const [isWarningVisible, setIsWarningVisible] = useState(false);
 
-  const handleConfirmTransfer = async (txn: SignedTransferTxn) => {
+  const handleConfirmTransfer = async () => {
     try {
-      const res = await wallet.enqueueTransferTxn(txn);
-      navigate('TxSuccessScreen', { txid: res.tx_hash });
+      if (!senderAddress || !receiverAddress || !tick || !amount) throw new Error('invalid paramerts to send')
+      const res = await wallet.sendBisonTransaction({
+        method: BisonTransactionMethod.TRANSFER,
+        senderAddress,
+        receiverAddress,
+        amount,
+        tick,
+        tokenContractAddress
+      });
+      navigate('TxSuccessScreen', { txid: res.txId });
     } catch (error) {
       navigate('TxFailScreen', { error });
     }
   };
 
+  const handleConfirmInscriptionTransfer = async () => {
+    try {
+      if (!senderAddress || !receiverAddress || !tick || !amount || !inscriptionId) throw new Error('invalid paramerts to send')
+      const res = await wallet.sendBisonTransaction({
+        method: BisonTransactionMethod.INSCRIPTION_TRANSFER,
+        senderAddress,
+        receiverAddress,
+        amount: Number(satoshisToAmount(amount)),
+        tick,
+        inscription: inscriptionId,
+        tokenContractAddress
+      });
+      navigate('TxSuccessScreen', { txid: res.txId });
+    } catch (error) {
+      navigate('TxFailScreen', { error });
+    }
+  };
+
+
   const handleConfirmPegIn = async () => {
     const { success, txid, error } = await pushBitcoinTx(rawtx as string);
-    // const success = true;
-    // const error = '';
     if (success) {
-      // const txid = 'c609ce15d8409c62293e3e5a4f1c77f6a3ef7dd1950c1f6cf21e2cbedee4fa1d';
       try {
-        const signedTxn = await wallet.b_signBridgeBtcToBisonTxn(txid);
-        console.log(signedTxn);
-        const res = await wallet.enqueuePegInTxn(signedTxn);
-        console.log(res);
-        navigate('TxSuccessScreen', { txid: txid });
-        // navigate('TxSuccessScreen', { txid: '12345' });
+        const res = await wallet.sendBisonTransaction({
+          tick: BISON_DEFAULT_TOKEN,
+          method: BisonTransactionMethod.PEG_IN,
+          senderAddress: address,
+          receiverAddress: address,
+          l1txid: txid
+        });
+        navigate('TxSuccessScreen', { txid: res.txId });
       } catch (error) {
         navigate('TxFailScreen', { error });
       }
@@ -192,34 +204,53 @@ export default function SignBIP322({
 
   const init = async () => {
     switch (type) {
-      case BisonTxType.PEG_IN: {
-        // if (!txId) throw new Error('txId is required in PEG_IN type');
-        // const signedTxn = await wallet.b_signBridgeBtcToBisonTxn(txId);
-        // setSignedTxn(signedTxn);
+      case BisonTransactionMethod.PEG_IN: {
+        if (!rawtx || !l1fee) throw new Error('rawtx and l1Fee are required in PEG_IN type');
         break;
       }
-      case BisonTxType.TRANSFER: {
+      case BisonTransactionMethod.TRANSFER: {
         if (
           !senderAddress ||
           !receiverAddress ||
           !amount ||
-          !gasEstimated ||
-          !gasEstimatedHash ||
           !tick ||
-          !tokenContractAddress
+          !tokenContractAddress ||
+          !amount
         ) {
           throw new Error('Invalid params in TRANSFER type');
         }
-        const signedTxn = await wallet.b_signTransferTxn({
+        const { gasEstimated } = await wallet.getBisonFeeSummary({
+          method: BisonTransactionMethod.TRANSFER,
           senderAddress,
           receiverAddress,
           amount,
           tokenContractAddress,
           tick,
-          gasEstimated,
-          gasEstimatedHash
         });
-        setSignedTransferTxn(signedTxn);
+        setBisonFee(gasEstimated);
+        break;
+      }
+      case BisonTransactionMethod.INSCRIPTION_TRANSFER: {
+        if (
+          !senderAddress ||
+          !receiverAddress ||
+          !tick ||
+          !tokenContractAddress ||
+          !inscriptionId ||
+          !amount
+        ) {
+          throw new Error('Invalid params in INSCRIPTION_TRANSFER type');
+        }
+        const { gasEstimated } = await wallet.getBisonFeeSummary({
+          method: BisonTransactionMethod.INSCRIPTION_TRANSFER,
+          senderAddress,
+          receiverAddress,
+          tokenContractAddress,
+          inscription: inscriptionId,
+          amount: Number(satoshisToAmount(amount)),
+          tick,
+        });
+        setBisonFee(gasEstimated);
       }
     }
     setLoading(false);
@@ -271,13 +302,14 @@ export default function SignBIP322({
 
   const handleOnClick = () => {
     switch (type) {
-      case BisonTxType.PEG_IN:
-        // if (!signedTxn) throw new Error('txn not signed yet');
+      case BisonTransactionMethod.PEG_IN:
         handleConfirmPegIn();
         break;
-      default:
-        if (!signedTransferTxn) throw new Error('txn not signed yet');
-        handleConfirmTransfer(signedTransferTxn);
+      case BisonTransactionMethod.TRANSFER:
+        handleConfirmTransfer();
+        break;
+      case BisonTransactionMethod.INSCRIPTION_TRANSFER:
+        handleConfirmInscriptionTransfer();
         break;
     }
   };
@@ -287,30 +319,36 @@ export default function SignBIP322({
       {header}
       <Content>
         <Column gap="xl">
-          {type === BisonTxType.PEG_IN ? (
-            <PegInDetailsComponent tick={tick} amount={amount} receiverAddress={receiverAddress} fee={fee} />
+          {type === BisonTransactionMethod.PEG_IN ? (
+            <PegInDetailsComponent tick={tick || BISON_DEFAULT_TOKEN} amount={amount || 0} receiverAddress={receiverAddress || '' } l1fee={l1fee || 0} />
           ) : (
             <Card mt="lg" style={{ display: 'block' }}>
               <Row justifyBetween my="xl">
                 <Text text="From" color="textDim" />
-                <CopyableAddress address={signedTransferTxn?.sAddr || ''} />
+                <CopyableAddress address={senderAddress || ''} />
               </Row>
               <Row justifyBetween my="xl">
                 <Text text="To" color="textDim" />
-                <CopyableAddress address={signedTransferTxn?.rAddr || ''} />
+                <CopyableAddress address={receiverAddress || ''} />
               </Row>
               <Row justifyBetween my="xl">
                 <Text text="Token Contract Address" color="textDim" />
-                <CopyableAddress address={signedTransferTxn?.tokenContractAddress || ''} />
+                <CopyableAddress address={tokenContractAddress || ''} />
               </Row>
+              {inscriptionId ? (
+                <Row justifyBetween my="xl">
+                  <Text text="Inscription id" color="textDim" />
+                  <CopyableAddress address={inscriptionId || ''} />
+                </Row>
+              ) : null}
               <Row justifyBetween my="xl">
                 <Text text="Asset" color="textDim" />
-                <Text text={signedTransferTxn?.tick.toUpperCase()} size="sm" preset="bold" color="textDim" />
+                <Text text={tick?.toUpperCase()} size="sm" preset="bold" color="textDim" />
               </Row>
               <Row justifyBetween my="xl">
                 <Text text="Fee" color="textDim" />
                 <Text
-                  text={satoshisToAmount(signedTransferTxn?.gas_estimated || 0)}
+                  text={satoshisToAmount(bisonFee || 0)}
                   size="sm"
                   preset="bold"
                   color="textDim"
@@ -319,12 +357,18 @@ export default function SignBIP322({
               <Row justifyBetween my="xl">
                 <Text text="Amount" color="textDim" />
                 <Text
-                  text={`${satoshisToAmount(signedTransferTxn?.amt || 0)} ${signedTransferTxn?.tick.toUpperCase()}`}
+                  text={`${amount} ${ type === BisonTransactionMethod.INSCRIPTION_TRANSFER ? 'sats' : tick?.toUpperCase()}`}
                   size="sm"
                   preset="bold"
                   color="textDim"
                 />
               </Row>
+              {type	=== BisonTransactionMethod.INSCRIPTION_TRANSFER ?
+                (
+                  <Row justifyBetween my="xl">
+                    <InscriptionPreview key={inscriptionId} data={inscriptionData!} preset="small" />
+                  </Row>
+                ) : null}
             </Card>
           )}
         </Column>
@@ -336,9 +380,8 @@ export default function SignBIP322({
           {hasHighRisk == false && (
             <Button
               preset="primary"
-              text={type == BisonTxType.PEG_IN ? 'Confirm' : 'Confirm & Pay'}
+              text={type !== BisonTransactionMethod.TRANSFER ? 'Confirm' : 'Confirm & Pay'}
               onClick={handleOnClick}
-              disabled={!rawtx && !signedTransferTxn}
               full
             />
           )}

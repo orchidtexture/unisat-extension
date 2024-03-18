@@ -5,25 +5,23 @@ import {
   AddressTokenSummary,
   AppSummary,
   Arc20Balance,
-  BisonGetFeeResponse,
+  BisonInscriptionResponse,
+  BisonTransactionMethod,
   BitcoinBalance,
-  DecodedPsbt, FeeSummary, InscribeOrder,
+  BuildBisonTxnParams,
+  DecodedPsbt, FeeSummary, GetBisonTransactionFeeParams, GetBisonTransactionFeeResponse, InscribeOrder,
   Inscription,
   InscriptionSummary,
   NetworkType,
-  SignedTransferTxn,
   TokenBalance,
   TokenTransfer,
-  TxnParams,
   UTXO,
   UTXO_Detail,
-  UnsignedTransferTxn,
   VersionDetail,
   WalletConfig
 } from '@/shared/types';
 import randomstring from 'randomstring';
 import { preferenceService } from '.';
-import wallet from '../controller/wallet';
 
 
 interface OpenApiStore {
@@ -43,50 +41,54 @@ enum API_STATUS {
   SUCCESS = 0
 }
 
-export const buldTransferTxn = (txnInput: TxnParams) => {
-  const txn: any = {
-    method: 'transfer',
-    sAddr: txnInput.sAddr,
-    rAddr: txnInput.rAddr,
-    amt: txnInput.amt,
-    tick: txnInput.tick,
-    nonce: txnInput.nonce,
-    tokenContractAddress: txnInput.tokenContractAddress,
-    sig: txnInput.sig || ''
-  };
-  if (txnInput.gas_estimated && txnInput.gas_estimated_hash) {
-    txn.gas_estimated = txnInput.gas_estimated
-    txn.gas_estimated_hash = txnInput.gas_estimated_hash
-  };
-  return txn;
-}
-
-export const buldTransferInscriptionTxn = (txnInput: TxnParams) => {
-  const txn: any = {
-    method: 'inscription_transfer',
-    sAddr: txnInput.sAddr,
-    rAddr: txnInput.rAddr,
-    amt: txnInput.amt,
-    inscription: txnInput.inscriptionId,
-    tick: 'inscription',
-    nonce: txnInput.nonce,
-    tokenContractAddress: txnInput.tokenContractAddress,
-    sig: txnInput.sig || '',
-    gas_estimated: txnInput.gas_estimated,
-    gas_estimated_hash: txnInput.gas_estimated_hash
-  };
-  return txn;
-}
-
-export const buldPegInTxn = (txnInput: TxnParams) => {
-  const txn: any = {
-    method: 'peg_in',
-    token: txnInput.tick || BISON_DEFAULT_TOKEN,
-    L1txid: txnInput.L1txid,
-    sAddr: txnInput.sAddr,
-    rAddr: txnInput.rAddr,
-    nonce: txnInput.nonce,
-    sig: txnInput.sig || ''
+export const buildBisonTransaction = (txnInput: BuildBisonTxnParams) => {
+  let txn: any = {}
+  switch (txnInput.method) {
+    case BisonTransactionMethod.TRANSFER : {
+      txn = {
+        method: BisonTransactionMethod.TRANSFER,
+        sAddr: txnInput.senderAddress,
+        rAddr: txnInput.receiverAddress,
+        amt: txnInput.amount,
+        tick: txnInput.tick,
+        nonce: txnInput.nonce,
+        tokenContractAddress: txnInput.tokenContractAddress,
+        sig: txnInput.sig || ''
+      };
+      break;
+    }
+    case BisonTransactionMethod.INSCRIPTION_TRANSFER: {
+      if (!txnInput?.inscription) throw new Error('inscription is required')
+      txn = {
+        method: BisonTransactionMethod.INSCRIPTION_TRANSFER,
+        sAddr: txnInput.senderAddress,
+        rAddr: txnInput.receiverAddress,
+        amt: txnInput.amount,
+        inscription: txnInput.inscription,
+        tick: txnInput.tick,
+        nonce: txnInput.nonce,
+        tokenContractAddress: txnInput.tokenContractAddress,
+        sig: txnInput.sig || ''
+      };
+      break;
+    }
+    case BisonTransactionMethod.PEG_IN : {
+      if (!txnInput.l1txid) throw new Error('l1Txid is required')
+      txn = {
+        method: BisonTransactionMethod.PEG_IN,
+        token: txnInput.tick || BISON_DEFAULT_TOKEN,
+        L1txid: txnInput.l1txid,
+        sAddr: txnInput.senderAddress,
+        rAddr: txnInput.receiverAddress,
+        nonce: txnInput.nonce,
+        sig: txnInput.sig || ''
+      };
+      break;
+    }
+  }
+  if (txnInput.gasEstimated && txnInput.gasEstimatedHash) {
+    txn.gas_estimated = txnInput.gasEstimated
+    txn.gas_estimated_hash = txnInput.gasEstimatedHash
   };
   return txn;
 }
@@ -366,88 +368,47 @@ export class OpenApiService {
   }
 
   async getFeeSummary(): Promise<FeeSummary> {
-    // this.b_debugSig()
-    // this.b_debugBridge()
     return this.httpGet('/default/fee-summary', {});
   }
-
-  // async getFeeSummary() {
-  //   // this.b_debugSig()
-  //   this.b_debugBridge()
-  //   // return this.httpGet('/default/fee-summary', {});
-  // }
 
   async b_getNonce(address): Promise<number> {
     const resp: any = await this.b_httpGet(`/sequencer_endpoint/nonce/${address}`, {});
     return resp.nonce
   }
 
-  async b_getFeeSummary(sAddr: string, rAddr: string, amt: number, tick: string, tokenContractAddress: string): Promise<BisonGetFeeResponse> {
-    let nonce = await this.b_getNonce(sAddr);
-    nonce += 1;
-    const txn = buldTransferTxn({sAddr, rAddr, amt, tick, tokenContractAddress, nonce});
-    const fee: any = await this.b_httpPost('/sequencer_endpoint/gas_meter', txn);
-    const formatedTxn = buldTransferTxn({...txn, nonce, gas_estimated: fee.gas_estimated, gas_estimated_hash: fee.gas_estimated_hash});
-    return formatedTxn
+  async getBisonFeeSummary(txn: GetBisonTransactionFeeParams): Promise<GetBisonTransactionFeeResponse> {
+    try {
+      if (!txn?.nonce) {
+        const nonce = await this.b_getNonce(txn.senderAddress);
+        txn.nonce = nonce + 1;
+      }
+      const fee: any = await this.b_httpPost('/sequencer_endpoint/gas_meter', txn);
+      return {
+        gasEstimated: fee.gas_estimated as number,
+        gasEstimatedHash: fee.gas_estimated_hash as string
+      }
+    }
+    catch(e) {
+      console.log('error geting gar meter:', e)
+      throw e
+    }
+
   }
 
-  async b_getInscrptionList(address): Promise<any> {
-    const inscrioptions: any = this.b_httpPost('/inscription_endpoint/inscriptions', { address });
-    return inscrioptions;
+  async b_getInscriptionList(address: string, cursor: number, size: number): Promise<{ list: BisonInscriptionResponse[], total: number }> {
+    const inscriptions: any = await this.b_httpPost('/inscription_endpoint/inscriptions', { address });
+    const startIndex = (cursor) * size;
+    const endIndex = startIndex + size;
+    const list = inscriptions.slice(startIndex, endIndex)
+    return {
+      list,
+      total: inscriptions.length
+    }
   }
 
-  async b_enqueueTxn(txn): Promise<any> {
-    const formatedTxn = buldTransferTxn(txn);
-    const tx: any = this.b_httpPost('/sequencer_endpoint/enqueue_transaction', formatedTxn);
+  async enqueueBisonTxn(txn): Promise<any> {
+    const tx: any = this.b_httpPost('/sequencer_endpoint/enqueue_transaction', txn);
     return tx;
-  }
-
-  async b_enqueuePegInTxn(txn): Promise<any> {
-    const formatedTxn = buldPegInTxn(txn);
-    const tx: any = this.b_httpPost('/sequencer_endpoint/enqueue_transaction', formatedTxn);
-    return tx;
-  }
-
-  async b_debugSig(): Promise<any> {
-    const unsignedTxn = buldTransferTxn({
-      'method': 'transfer',
-      'sAddr': 'tb1pq53qftc428auwq7k08dtme6e7anwewslvfszp2exey8zkylkkf2qx24rlm',
-      'rAddr': 'tb1pev4je3qurt2w7p5mf5d3jtsd0g2k6hkeldat4usmag27mmp3nljqthkvvz',
-      'amt': 1000,
-      'tick': 'btc',
-      'tokenContractAddress': 'tb1pqzv3xwp40antfxdslnddj6zda4r5uwdh89qy7rrzjsat4etrvxxqq2fmjq',
-      'sig': ''
-    });
-    const txWithNonceAndGas = await this.b_getFeeSummary(unsignedTxn.sAddr, unsignedTxn.rAddr, unsignedTxn.amt, unsignedTxn.tick, unsignedTxn.tokenContractAddress)
-    const enq = await wallet.enqueueTx(txWithNonceAndGas)
-    console.log(enq);
-    return 'enq';
-  }
-
-  async signBridgeBtcToBisonTxn(txId: string): Promise<any> {
-    const signedTxn = await wallet.signBridgeBtcToBisonTxn(txId)
-    return signedTxn;
-  }
-
-  async signBisonTransferTxn(params: UnsignedTransferTxn): Promise<SignedTransferTxn> {
-    const signedTxn = await wallet.signBisonTransferTxn(params)
-    return signedTxn;
-  }
-
-  async b_transfer(txn): Promise<any> {
-    const formatedTxn = buldTransferTxn(txn);
-    const tx: any = this.b_httpPost('/sequencer_endpoint/transfer', formatedTxn);
-    return tx;
-  }
-
-  // TODO: find the real sig method
-  async bip322sig(txn: any): Promise<any> {
-    console.log('first 322 sig method')
-    const message = JSON.stringify(txn);
-    console.log(message)
-    const sig = wallet.signBIP322Simple(message)
-    // const sig = await wallet.signBisonTx(txn)
-    return sig
   }
 
   async getDomainInfo(domain: string): Promise<Inscription> {
