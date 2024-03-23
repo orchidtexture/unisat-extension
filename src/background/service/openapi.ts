@@ -327,11 +327,9 @@ export class OpenApiService {
   }
 
   async getInscriptionUtxoDetail(inscriptionId: string): Promise<UTXO_Detail> {
-    console.log('DETAIL')
     const ins: any = this.httpGet('/inscription/utxo-detail', {
       inscriptionId
     });
-    console.log(ins)
     return ins
   }
 
@@ -397,7 +395,7 @@ export class OpenApiService {
 
   async b_getInscriptionList(address: string, cursor: number, size: number): Promise<{ list: BisonInscriptionResponse[], total: number }> {
     const inscriptions: any = await this.b_httpPost('/inscription_endpoint/inscriptions', { address });
-    const startIndex = (cursor) * size;
+    const startIndex = cursor;
     const endIndex = startIndex + size;
     const list = inscriptions.slice(startIndex, endIndex)
     return {
